@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="hero-section mb-4">
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+        <h1>Make Your F1 Predictions</h1>
+        <p>Test your Formula 1 knowledge and compete with other fans</p>
+        {% if not user.is_authenticated %}
+            <a href="{% url 'login' %}" class="btn btn-light btn-lg">Join Now</a>
+        {% else %}
+            <a href="{% url 'race_detail' upcoming_races.0.id %}" class="btn btn-light btn-lg">Bet on Next Race</a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h2>Upcoming Races</h2>
+                </div>
+                <div class="card-body">
+                    {% if upcoming_races %}
+                        <div class="list-group">
+                            {% for race in upcoming_races %}
+                                <a href="{% url 'race_detail' race.id %}" class="list-group-item list-group-item-action">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <h5 class="mb-1">{{ race.name }}</h5>
+                                        <small>{{ race.race_date|date:"M d, Y" }}</small>
+                                    </div>
+                                    <p class="mb-1">{{ race.circuit.name }}, {{ race.circuit.country }}</p>
+                                    <small>Betting closes: {{ race.practice_start|date:"M d, Y H:i" }}</small>
+                                </a>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p>No upcoming races.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h2>Current Leaderboard</h2>
+                </div>
+                <div class="card-body">
+                    {% if leaderboard %}
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Rank</th>
+                                        <th>Player</th>
+                                        <th>Points</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for standing in leaderboard %}
+                                        <tr>
+                                            <td>{{ forloop.counter }}</td>
+                                            <td>{{ standing.user__username }}</td>
+                                            <td>{{ standing.total_points }}</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        <a href="{% url 'current_standings' %}" class="btn btn-primary mt-2">View Full Standings</a>
+                    {% else %}
+                        <p>No points recorded yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h1>Enter Results for {{ race.name }}</h1>
+    <p class="text-muted">Race date: {{ race.race_date|date:"F d, Y" }}</p>
+    
+    <form method="post">
+        {% csrf_token %}
+        <div class="card mb-4">
+            <div class="card-header">
+                <h3>Podium Results</h3>
+            </div>
+            <div class="card-body">
+                <div class="form-group mb-3">
+                    <label for="first_place">1st Place:</label>
+                    <select name="first_place" id="first_place" class="form-select" required>
+                        <option value="">Select Driver</option>
+                        {% for driver in drivers %}
+                            <option value="{{ driver.id }}">{{ driver.name }} ({{ driver.code }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="form-group mb-3">
+                    <label for="second_place">2nd Place:</label>
+                    <select name="second_place" id="second_place" class="form-select" required>
+                        <option value="">Select Driver</option>
+                        {% for driver in drivers %}
+                            <option value="{{ driver.id }}">{{ driver.name }} ({{ driver.code }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="form-group mb-3">
+                    <label for="third_place">3rd Place:</label>
+                    <select name="third_place" id="third_place" class="form-select" required>
+                        <option value="">Select Driver</option>
+                        {% for driver in drivers %}
+                            <option value="{{ driver.id }}">{{ driver.name }} ({{ driver.code }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card mb-4">
+            <div class="card-header">
+                <h3>DNF Count</h3>
+            </div>
+            <div class="card-body">
+                <div class="form-group">
+                    <label for="dnf_count">Number of DNFs:</label>
+                    <input type="number" name="dnf_count" id="dnf_count" class="form-control" min="0" max="20" required>
+                </div>
+            </div>
+        </div>
+        
+        <div class="alert alert-warning">
+            <p><strong>Warning:</strong> Submitting race results will calculate points for all bets. This action cannot be undone.</p>
+        </div>
+        
+        <button type="submit" class="btn btn-primary">Submit Results</button>
+    </form>
+</div>
+{% endblock %}

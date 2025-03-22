@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h1>{{ race.name }}</h1>
+    <div class="alert alert-warning">
+        <h4>Betting is closed for this race</h4>
+        <p>Practice sessions have already started. No more bets can be placed.</p>
+    </div>
+    
+    {% if user_bet %}
+        <div class="card">
+            <div class="card-header">
+                <h2>Your Bet</h2>
+            </div>
+            <div class="card-body">
+                <h5>Your Podium Prediction:</h5>
+                <ol>
+                    <li>{{ user_bet.first_place }}</li>
+                    <li>{{ user_bet.second_place }}</li>
+                    <li>{{ user_bet.third_place }}</li>
+                </ol>
+                <h5>Your DNF Prediction: {{ user_bet.dnf_prediction }}</h5>
+            </div>
+        </div>
+    {% else %}
+        <div class="alert alert-danger">
+            <p>You did not place a bet for this race.</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

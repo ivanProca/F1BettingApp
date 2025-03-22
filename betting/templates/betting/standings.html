@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h1>Season Standings - {{ season.year }}</h1>
+    
+    <div class="mb-4">
+        <form class="form-inline" method="get">
+            <div class="form-group">
+                <label for="season-select" class="me-2">Select Season:</label>
+                <select id="season-select" class="form-select" onchange="location = this.value;">
+                    {% for s in all_seasons %}
+                        <option value="{% url 'season_standings' s.id %}" {% if s.id == season.id %}selected{% endif %}>
+                            {{ s.year }} Season
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+        </form>
+    </div>
+    
+    <div class="card">
+        <div class="card-header">
+            <h2>Standings</h2>
+        </div>
+        <div class="card-body">
+            {% if standings %}
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Rank</th>
+                                <th>Player</th>
+                                <th>Points</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for standing in standings %}
+                                <tr>
+                                    <td>{{ forloop.counter }}</td>
+                                    <td>{{ standing.user__username }}</td>
+                                    <td>{{ standing.total_points }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p>No points recorded yet for this season.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

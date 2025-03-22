@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h1>{{ race.name }} Results</h1>
+    <h3>{{ race.circuit.name }}, {{ race.circuit.country }}</h3>
+    <p class="text-muted">Race date: {{ race.race_date|date:"F d, Y" }}</p>
+    
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h2>Race Results</h2>
+                </div>
+                <div class="card-body">
+                    <h5>Podium:</h5>
+                    <ol>
+                        <li><strong>{{ race_result.first_place }}</strong></li>
+                        <li><strong>{{ race_result.second_place }}</strong></li>
+                        <li><strong>{{ race_result.third_place }}</strong></li>
+                    </ol>
+                    <h5>DNF Count: {{ race_result.dnf_count }}</h5>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h2>Your Bet</h2>
+                </div>
+                <div class="card-body">
+                    {% if user_bet %}
+                        <h5>Your Podium Prediction:</h5>
+                        <ol>
+                            <li>{{ user_bet.first_place }}</li>
+                            <li>{{ user_bet.second_place }}</li>
+                            <li>{{ user_bet.third_place }}</li>
+                        </ol>
+                        <h5>Your DNF Prediction: {{ user_bet.dnf_prediction }}</h5>
+                        <div class="alert alert-info mt-3">
+                            <h5>Points earned: {{ user_bet.points }}</h5>
+                        </div>
+                    {% else %}
+                        <p>You did not place a bet for this race.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="card">
+        <div class="card-header">
+            <h2>All Bets</h2>
+        </div>
+        <div class="card-body">
+            {% if all_bets %}
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Player</th>
+                                <th>1st</th>
+                                <th>2nd</th>
+                                <th>3rd</th>
+                                <th>DNFs</th>
+                                <th>Points</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for bet in all_bets %}
+                                <tr {% if bet.user == user %}class="table-primary"{% endif %}>
+                                    <td>{{ bet.user.username }}</td>
+                                    <td>{{ bet.first_place.code }}</td>
+                                    <td>{{ bet.second_place.code }}</td>
+                                    <td>{{ bet.third_place.code }}</td>
+                                    <td>{{ bet.dnf_prediction }}</td>
+                                    <td><strong>{{ bet.points }}</strong></td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p>No bets placed for this race.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,9 +1,9 @@
 services:
   - type: web
-    name: Pit Stop Picks
+    name: f1project
     env: python
     buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn your_project.wsgi:application
+    startCommand: gunicorn f1project.wsgi:application
     envVars:
       - key: SECRET_KEY
         generateValue: true
@@ -11,10 +11,10 @@ services:
         value: false
       - key: DATABASE_URL
         fromDatabase:
-          name: f1betting
+          name: f1betting-db
           property: connectionString
 
 databases:
-  - name: f1betting
+  - name: f1betting-db
     databaseName: f1betting
     user: ivanprocaccino

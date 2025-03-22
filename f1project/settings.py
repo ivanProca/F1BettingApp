@@ -26,7 +26,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get('SECRET_KEY', 'fallback-development-key')#'django-insecure-%-fc2_#d0ac--7stn@xr-p46b!%*_y$3fqt1g(!&ong15k95oo'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get('DEBUG', 'False') == 'True'
+DEBUG = os.environ.get('DEBUG', 'False') #== 'True'
 
 ALLOWED_HOSTS = ['pit-stop-picks.onrender.com', 'localhost', '127.0.0.1']
 

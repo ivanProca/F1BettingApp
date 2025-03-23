@@ -10,7 +10,11 @@
         {% if not user.is_authenticated %}
             <a href="{% url 'login' %}" class="btn btn-light btn-lg">Join Now</a>
         {% else %}
-            <a href="{% url 'race_detail' upcoming_races.0.id %}" class="btn btn-light btn-lg">Bet on Next Race</a>
+            {% if upcoming_races and upcoming_races.0 %}
+                <a href="{% url 'race_detail' upcoming_races.0.id %}" class="btn btn-light btn-lg">Bet on Next Race</a>
+            {% else %}
+                <div class="btn btn-secondary btn-lg disabled">No upcoming races</div>
+            {% endif %}
         {% endif %}
     </div>
 </div>

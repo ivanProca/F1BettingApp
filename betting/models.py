@@ -24,6 +24,7 @@ class Race(models.Model):
     name = models.CharField(max_length=100)  # e.g., "Monaco Grand Prix"
     race_date = models.DateTimeField()
     practice_start = models.DateTimeField()  # Betting deadline
+    is_sprint = models.BooleanField(default=False)
     is_completed = models.BooleanField(default=False)
     dnf_count = models.IntegerField(null=True, blank=True)  # Filled after race
     
@@ -45,9 +46,12 @@ class Driver(models.Model):
 class Bet(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='bets')
     race = models.ForeignKey(Race, on_delete=models.CASCADE, related_name='bets')
-    first_place = models.ForeignKey(Driver, on_delete=models.CASCADE, related_name='+')
-    second_place = models.ForeignKey(Driver, on_delete=models.CASCADE, related_name='+')
-    third_place = models.ForeignKey(Driver, on_delete=models.CASCADE, related_name='+')
+    first_place_quali = models.ForeignKey(Driver, on_delete=models.CASCADE, related_name='+')
+    second_place_quali = models.ForeignKey(Driver, on_delete=models.CASCADE, related_name='+')
+    third_place_quali = models.ForeignKey(Driver, on_delete=models.CASCADE, related_name='+')
+    first_place_race = models.ForeignKey(Driver, on_delete=models.CASCADE, related_name='+')
+    second_place_race = models.ForeignKey(Driver, on_delete=models.CASCADE, related_name='+')
+    third_place_race = models.ForeignKey(Driver, on_delete=models.CASCADE, related_name='+')
     dnf_prediction = models.IntegerField()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -61,9 +65,12 @@ class Bet(models.Model):
 
 class RaceResult(models.Model):
     race = models.OneToOneField(Race, on_delete=models.CASCADE, related_name='result')
-    first_place = models.ForeignKey(Driver, on_delete=models.CASCADE, related_name='+')
-    second_place = models.ForeignKey(Driver, on_delete=models.CASCADE, related_name='+')
-    third_place = models.ForeignKey(Driver, on_delete=models.CASCADE, related_name='+')
+    first_place_quali = models.ForeignKey(Driver, on_delete=models.CASCADE, related_name='+')
+    second_place_quali = models.ForeignKey(Driver, on_delete=models.CASCADE, related_name='+')
+    third_place_quali = models.ForeignKey(Driver, on_delete=models.CASCADE, related_name='+')
+    first_place_race = models.ForeignKey(Driver, on_delete=models.CASCADE, related_name='+')
+    second_place_race = models.ForeignKey(Driver, on_delete=models.CASCADE, related_name='+')
+    third_place_race = models.ForeignKey(Driver, on_delete=models.CASCADE, related_name='+')
     dnf_count = models.IntegerField()
     
     def __str__(self):
@@ -78,32 +85,58 @@ class RaceResult(models.Model):
         self.race.dnf_count = self.dnf_count
         self.race.save()
         
+        if self.race.is_sprint:
+            podium_correct_position_points = 3
+            podium_wrong_position_points = 1
+        else:
+            podium_correct_position_points = 1
+            podium_wrong_position_points = 0.5
+
         for bet in bets:
             points = 0
-            
-            # Create lists of actual and predicted podium drivers
-            actual_podium = [self.first_place, self.second_place, self.third_place]
-            predicted_podium = [bet.first_place, bet.second_place, bet.third_place]
+
+            # QUALI - Create lists of actual and predicted podium drivers
+            actual_podium_quali = [self.first_place_quali, self.second_place_quali, self.third_place_quali]
             
             # Check for exact matches (right driver in right position: 3 points)
-            if bet.first_place == self.first_place:
-                points += 3  # 1 for being on podium + 2 for correct position
-            elif bet.first_place in actual_podium:
-                points += 1  # 1 for being on podium but wrong position
+            if bet.first_place_quali == self.first_place_quali:
+                points += podium_correct_position_points  # 1 for being on podium + 2 for correct position
+            elif bet.first_place_quali in actual_podium_quali:
+                points += podium_wrong_position_points  # 1 for being on podium but wrong position
                 
-            if bet.second_place == self.second_place:
-                points += 3  # 1 for being on podium + 2 for correct position
-            elif bet.second_place in actual_podium:
-                points += 1  # 1 for being on podium but wrong position
+            if bet.second_place_quali == self.second_place_quali:
+                points += podium_correct_position_points  # 1 for being on podium + 2 for correct position
+            elif bet.second_place_quali in actual_podium_quali:
+                points += podium_wrong_position_points  # 1 for being on podium but wrong position
                 
-            if bet.third_place == self.third_place:
-                points += 3  # 1 for being on podium + 2 for correct position
-            elif bet.third_place in actual_podium:
-                points += 1  # 1 for being on podium but wrong position
+            if bet.third_place_quali == self.third_place_quali:
+                points += podium_correct_position_points  # 1 for being on podium + 2 for correct position
+            elif bet.third_place_quali in actual_podium_quali:
+                points += podium_wrong_position_points  # 1 for being on podium but wrong position
+
+            # RACE - Create lists of actual and predicted podium drivers
+            actual_podium = [self.first_place_race, self.second_place_race, self.third_place_race]
+            predicted_podium = [bet.first_place_race, bet.second_place_race, bet.third_place_race]
+            
+            # Check for exact matches (right driver in right position: 3 points)
+            if bet.first_place_race == self.first_place_race:
+                points += podium_correct_position_points  # 1 for being on podium + 2 for correct position
+            elif bet.first_place_race in actual_podium:
+                points += podium_wrong_position_points  # 1 for being on podium but wrong position
+                
+            if bet.second_place_race == self.second_place_race:
+                points += podium_correct_position_points  # 1 for being on podium + 2 for correct position
+            elif bet.second_place_race in actual_podium:
+                points += podium_wrong_position_points  # 1 for being on podium but wrong position
+                
+            if bet.third_place_race == self.third_place_race:
+                points += podium_correct_position_points  # 1 for being on podium + 2 for correct position
+            elif bet.third_place_race in actual_podium:
+                points += podium_wrong_position_points  # 1 for being on podium but wrong position
             
             # Check DNF prediction
             if bet.dnf_prediction == self.dnf_count:
-                points += 1
+                points += 2
                 
             # Update bet points
             bet.points = points

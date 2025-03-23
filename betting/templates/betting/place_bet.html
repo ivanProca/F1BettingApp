@@ -12,30 +12,61 @@
         
         <div class="card mb-4">
             <div class="card-header">
-                <h3>Podium Prediction</h3>
+                <h3>QUALI - Podium Prediction</h3>
             </div>
             <div class="card-body">
                 <div class="form-group mb-3">
-                    <label for="{{ form.first_place.id_for_label }}">1st Place:</label>
-                    {{ form.first_place }}
-                    {% if form.first_place.errors %}
-                        <div class="text-danger">{{ form.first_place.errors }}</div>
+                    <label for="{{ form.first_place_quali.id_for_label }}">1st Place:</label>
+                    {{ form.first_place_quali }}
+                    {% if form.first_place_quali.errors %}
+                        <div class="text-danger">{{ form.first_place_quali.errors }}</div>
                     {% endif %}
                 </div>
                 
                 <div class="form-group mb-3">
-                    <label for="{{ form.second_place.id_for_label }}">2nd Place:</label>
-                    {{ form.second_place }}
-                    {% if form.second_place.errors %}
-                        <div class="text-danger">{{ form.second_place.errors }}</div>
+                    <label for="{{ form.second_place_quali.id_for_label }}">2nd Place:</label>
+                    {{ form.second_place_quali }}
+                    {% if form.second_place_quali.errors %}
+                        <div class="text-danger">{{ form.second_place_quali.errors }}</div>
                     {% endif %}
                 </div>
                 
                 <div class="form-group mb-3">
-                    <label for="{{ form.third_place.id_for_label }}">3rd Place:</label>
-                    {{ form.third_place }}
-                    {% if form.third_place.errors %}
-                        <div class="text-danger">{{ form.third_place.errors }}</div>
+                    <label for="{{ form.third_place_quali.id_for_label }}">3rd Place:</label>
+                    {{ form.third_place_quali }}
+                    {% if form.third_place_quali.errors %}
+                        <div class="text-danger">{{ form.third_place_quali.errors }}</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header">
+                <h3>RACE - Podium Prediction</h3>
+            </div>
+            <div class="card-body">
+                <div class="form-group mb-3">
+                    <label for="{{ form.first_place_race.id_for_label }}">1st Place:</label>
+                    {{ form.first_place_race }}
+                    {% if form.first_place_race.errors %}
+                        <div class="text-danger">{{ form.first_place_race.errors }}</div>
+                    {% endif %}
+                </div>
+                
+                <div class="form-group mb-3">
+                    <label for="{{ form.second_place_race.id_for_label }}">2nd Place:</label>
+                    {{ form.second_place_race }}
+                    {% if form.second_place_race.errors %}
+                        <div class="text-danger">{{ form.second_place_race.errors }}</div>
+                    {% endif %}
+                </div>
+                
+                <div class="form-group mb-3">
+                    <label for="{{ form.third_place_race.id_for_label }}">3rd Place:</label>
+                    {{ form.third_place_race }}
+                    {% if form.third_place_race.errors %}
+                        <div class="text-danger">{{ form.third_place_race.errors }}</div>
                     {% endif %}
                 </div>
             </div>

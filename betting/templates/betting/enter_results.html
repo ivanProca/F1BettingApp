@@ -9,12 +9,12 @@
         {% csrf_token %}
         <div class="card mb-4">
             <div class="card-header">
-                <h3>Podium Results</h3>
+                <h3>QUALI - Podium Results</h3>
             </div>
             <div class="card-body">
                 <div class="form-group mb-3">
-                    <label for="first_place">1st Place:</label>
-                    <select name="first_place" id="first_place" class="form-select" required>
+                    <label for="first_place_quali">1st Place:</label>
+                    <select name="first_place_quali" id="first_place_quali" class="form-select" required>
                         <option value="">Select Driver</option>
                         {% for driver in drivers %}
                             <option value="{{ driver.id }}">{{ driver.name }} ({{ driver.code }})</option>
@@ -23,8 +23,8 @@
                 </div>
                 
                 <div class="form-group mb-3">
-                    <label for="second_place">2nd Place:</label>
-                    <select name="second_place" id="second_place" class="form-select" required>
+                    <label for="second_place_quali">2nd Place:</label>
+                    <select name="second_place_quali" id="second_place_quali" class="form-select" required>
                         <option value="">Select Driver</option>
                         {% for driver in drivers %}
                             <option value="{{ driver.id }}">{{ driver.name }} ({{ driver.code }})</option>
@@ -33,8 +33,45 @@
                 </div>
                 
                 <div class="form-group mb-3">
-                    <label for="third_place">3rd Place:</label>
-                    <select name="third_place" id="third_place" class="form-select" required>
+                    <label for="third_place_quali">3rd Place:</label>
+                    <select name="third_place_quali" id="third_place_quali" class="form-select" required>
+                        <option value="">Select Driver</option>
+                        {% for driver in drivers %}
+                            <option value="{{ driver.id }}">{{ driver.name }} ({{ driver.code }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header">
+                <h3>RACE - Podium Results</h3>
+            </div>
+            <div class="card-body">
+                <div class="form-group mb-3">
+                    <label for="first_place_race">1st Place:</label>
+                    <select name="first_place_race" id="first_place_race" class="form-select" required>
+                        <option value="">Select Driver</option>
+                        {% for driver in drivers %}
+                            <option value="{{ driver.id }}">{{ driver.name }} ({{ driver.code }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="form-group mb-3">
+                    <label for="second_place_race">2nd Place:</label>
+                    <select name="second_place_race" id="second_place_race" class="form-select" required>
+                        <option value="">Select Driver</option>
+                        {% for driver in drivers %}
+                            <option value="{{ driver.id }}">{{ driver.name }} ({{ driver.code }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="form-group mb-3">
+                    <label for="third_place_race">3rd Place:</label>
+                    <select name="third_place_race" id="third_place_race" class="form-select" required>
                         <option value="">Select Driver</option>
                         {% for driver in drivers %}
                             <option value="{{ driver.id }}">{{ driver.name }} ({{ driver.code }})</option>

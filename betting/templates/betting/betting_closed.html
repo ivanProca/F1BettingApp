@@ -14,11 +14,18 @@
                 <h2>Your Bet</h2>
             </div>
             <div class="card-body">
-                <h5>Your Podium Prediction:</h5>
+                <h5>QUALI - Your Podium Prediction:</h5>
                 <ol>
-                    <li>{{ user_bet.first_place }}</li>
-                    <li>{{ user_bet.second_place }}</li>
-                    <li>{{ user_bet.third_place }}</li>
+                    <li>{{ user_bet.first_place_quali }}</li>
+                    <li>{{ user_bet.second_place_quali }}</li>
+                    <li>{{ user_bet.third_place_quali }}</li>
+                </ol>
+
+                <h5>RACE - Your Podium Prediction:</h5>
+                <ol>
+                    <li>{{ user_bet.first_place_race }}</li>
+                    <li>{{ user_bet.second_place_race }}</li>
+                    <li>{{ user_bet.third_place_race }}</li>
                 </ol>
                 <h5>Your DNF Prediction: {{ user_bet.dnf_prediction }}</h5>
             </div>

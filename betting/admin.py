@@ -14,8 +14,8 @@ class CircuitAdmin(admin.ModelAdmin):
 
 @admin.register(Race)
 class RaceAdmin(admin.ModelAdmin):
-    list_display = ('name', 'season', 'circuit', 'race_date', 'is_completed')
-    list_filter = ('season', 'is_completed')
+    list_display = ('name', 'season', 'circuit', 'race_date', 'is_completed', 'is_sprint')
+    list_filter = ('season', 'is_completed', 'is_sprint')
     search_fields = ('name',)
     date_hierarchy = 'race_date'
 
@@ -27,11 +27,11 @@ class DriverAdmin(admin.ModelAdmin):
 
 @admin.register(Bet)
 class BetAdmin(admin.ModelAdmin):
-    list_display = ('user', 'race', 'first_place', 'second_place', 'third_place', 'dnf_prediction', 'points')
+    list_display = ('user', 'race', 'first_place_quali', 'second_place_quali', 'third_place_quali', 'first_place_race', 'second_place_race', 'third_place_race', 'dnf_prediction', 'points')
     list_filter = ('race__season', 'race')
     search_fields = ('user__username',)
 
 @admin.register(RaceResult)
 class RaceResultAdmin(admin.ModelAdmin):
-    list_display = ('race', 'first_place', 'second_place', 'third_place', 'dnf_count')
+    list_display = ('race', 'first_place_quali', 'second_place_quali', 'third_place_quali', 'first_place_race', 'second_place_race', 'third_place_race', 'dnf_count')
     list_filter = ('race__season',)

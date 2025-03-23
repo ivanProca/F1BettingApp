@@ -114,18 +114,24 @@ def enter_race_result(request, race_id):
         return redirect('home')
     
     if request.method == 'POST':
-        first_place_id = request.POST.get('first_place')
-        second_place_id = request.POST.get('second_place')
-        third_place_id = request.POST.get('third_place')
+        first_place_quali_id = request.POST.get('first_place_quali')
+        second_place_quali_id = request.POST.get('second_place_quali')
+        third_place_quali_id = request.POST.get('third_place_quali')
+        first_place_race_id = request.POST.get('first_place_race')
+        second_place_race_id = request.POST.get('second_place_race')
+        third_place_race_id = request.POST.get('third_place_race')
         dnf_count = request.POST.get('dnf_count')
         
         # Create or update race result
         result, created = RaceResult.objects.update_or_create(
             race=race,
             defaults={
-                'first_place_id': first_place_id,
-                'second_place_id': second_place_id,
-                'third_place_id': third_place_id,
+                'first_place_quali_id': first_place_quali_id,
+                'second_place_quali_id': second_place_quali_id,
+                'third_place_quali_id': third_place_quali_id,
+                'first_place_race_id': first_place_race_id,
+                'second_place_race_id': second_place_race_id,
+                'third_place_race_id': third_place_race_id,
                 'dnf_count': dnf_count,
             }
         )

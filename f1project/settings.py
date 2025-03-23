@@ -145,10 +145,3 @@ LOGOUT_REDIRECT_URL = 'home'
 
 from django.contrib.auth.models import User
 from django.db.utils import IntegrityError
-
-try:
-    if not User.objects.filter(username='admin').exists():
-        User.objects.create_superuser('admin', 'admin@example.com', 'your-password-here')
-        print('Superuser created!')
-except IntegrityError:
-    print('Superuser already exists!')

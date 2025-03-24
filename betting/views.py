@@ -1,4 +1,7 @@
 # betting/views.py
+
+import json
+
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
@@ -14,10 +17,18 @@ from django.contrib.auth.models import User
 def home(request):
     # Show upcoming races and leaderboard
     current_season = Season.objects.filter(is_active=True).first()
+    
+    # Upcoming races
     upcoming_races = Race.objects.filter(
         season=current_season,
         race_date__gt=timezone.now()
     ).order_by('race_date')[:5]
+    
+    # Completed races
+    completed_races = Race.objects.filter(
+        season=current_season,
+        is_completed=True
+    ).order_by('race_date')
     
     # Simple leaderboard based on total points
     leaderboard = Bet.objects.filter(
@@ -26,10 +37,71 @@ def home(request):
         total_points=Sum('points')
     ).order_by('-total_points')[:10]
     
+    # Prepare data for classification line graph
+    classification_data = prepare_classification_graph_data(current_season)
+    
+    # Convert classification data to JSON for template
+    classification_json = json.dumps({
+        username: {
+            'username': data['username'],
+            'cumulative_points': data['cumulative_points']
+        } for username, data in classification_data.items()
+    })
+    
     return render(request, 'betting/home.html', {
         'upcoming_races': upcoming_races,
+        'completed_races': completed_races,
         'leaderboard': leaderboard,
+        'classification_json': classification_json,
     })
+
+def prepare_classification_graph_data(season):
+    """
+    Prepare data for line graph showing classification evolution
+    """
+    # Get all completed races for the season
+    completed_races = Race.objects.filter(
+        season=season,
+        is_completed=True
+    ).order_by('race_date')
+    
+    # Prepare data structure for graph
+    classification_evolution = {}
+    
+    # Iterate through races to build cumulative points
+    for race in completed_races:
+        # Get bets for this race
+        race_bets = Bet.objects.filter(race=race)
+        
+        for bet in race_bets:
+            username = bet.user.username
+            
+            # Initialize user data if not exists
+            if username not in classification_evolution:
+                classification_evolution[username] = {
+                    'username': username,
+                    'points_per_race': [0] * len(completed_races),
+                    'cumulative_points': [0] * len(completed_races)
+                }
+            
+            # Find the race index
+            race_index = list(completed_races).index(race)
+            
+            # Add points for this race
+            classification_evolution[username]['points_per_race'][race_index] = bet.points
+    
+    # Calculate cumulative points
+    for username, data in classification_evolution.items():
+        cumulative = 0
+        cumulative_points = []
+        
+        for points in data['points_per_race']:
+            cumulative += points
+            cumulative_points.append(cumulative)
+        
+        data['cumulative_points'] = cumulative_points
+    
+    return classification_evolution
 
 @login_required
 def race_detail(request, race_id):
@@ -220,3 +292,6 @@ def login_view(request):
             messages.error(request, 'Invalid username or password.')
     
     return render(request, 'home.html')
+
+def rules_page(request):
+    return render(request, 'betting/rules.html')

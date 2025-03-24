@@ -9,6 +9,7 @@ urlpatterns = [
     path('standings/<int:season_id>/', views.season_standings, name='season_standings'),
     path('race/<int:race_id>/enter-results/', views.enter_race_result, name='enter_race_result'),
     path('register/', views.register_view, name='register'),
+    path('rules/', views.rules_page, name='rules_page'),
 ]
 
 # Add these to main urls.py

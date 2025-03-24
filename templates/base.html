@@ -29,6 +29,9 @@
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'current_standings' %}">Standings</a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'rules_page' %}">Rules</a>
+                    </li>
                 </ul>
                 <ul class="navbar-nav ms-auto">
                     {% if user.is_authenticated %}

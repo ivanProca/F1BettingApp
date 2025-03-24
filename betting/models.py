@@ -86,11 +86,11 @@ class RaceResult(models.Model):
         self.race.save()
         
         if self.race.is_sprint:
-            podium_correct_position_points = 3
-            podium_wrong_position_points = 1
-        else:
             podium_correct_position_points = 1
             podium_wrong_position_points = 0.5
+        else:
+            podium_correct_position_points = 3
+            podium_wrong_position_points = 1
 
         for bet in bets:
             points = 0

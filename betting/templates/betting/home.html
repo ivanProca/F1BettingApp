@@ -1,6 +1,5 @@
 {% extends "base.html" %}
 {% load static %}
-
 {% block content %}
 <div class="hero-section mb-4">
     <div class="hero-overlay"></div>
@@ -81,6 +80,46 @@
                 </div>
             </div>
         </div>
+
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h2>Completed Races</h2>
+                </div>
+                <div class="card-body">
+                    {% if completed_races %}
+                        <div class="list-group">
+                            {% for race in completed_races %}
+                                <a href="{% url 'race_detail' race.id %}" class="list-group-item list-group-item-action">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <h5 class="mb-1">{{ race.name }}</h5>
+                                        <small>{{ race.race_date|date:"M d, Y" }}</small>
+                                    </div>
+                                    <p class="mb-1">{{ race.circuit.name }}, {{ race.circuit.country }}</p>
+                                </a>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p>No upcoming races.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
     </div>
+
+    {% if completed_races and classification_json %}
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h2>Classification Evolution (Work in Progress)</h2>
+                </div>
+                <div class="card-body">
+                    <canvas id="classificationChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
 </div>
 {% endblock %}

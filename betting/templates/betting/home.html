@@ -30,14 +30,22 @@
                     {% if upcoming_races %}
                         <div class="list-group">
                             {% for race in upcoming_races %}
-                                <a href="{% url 'race_detail' race.id %}" class="list-group-item list-group-item-action">
-                                    <div class="d-flex w-100 justify-content-between">
-                                        <h5 class="mb-1">{{ race.name }}</h5>
-                                        <small>{{ race.race_date|date:"M d, Y" }}</small>
+                                <a href="{% url 'race_detail' race.id %}" class="list-group-item list-group-item-action d-flex align-items-center">
+                                    <img src="{% static 'images/circuit-thumbnails/'|add:race.circuit.name|add:'.png' %}" 
+                                         alt="{{ race.circuit.name }} thumbnail" 
+                                         class="circuit-list-thumbnail mr-3">
+
+                                         <div class="flex-grow-1">
+                                        <div class="d-flex w-100 justify-content-between">
+                                            <h5 class="mb-1">{{ race.name }} <span id="country-flag-{{ forloop.counter }}" 
+                                                class="fi mr-2" 
+                                                data-country="{{ race.circuit.country }}" 
+                                                style="width: 32px; height: 24px;"></span></h5>
+                                                <small>{{ race.race_date|date:"M d, Y" }}</small>
+                                        </div>
+                                        <p class="mb-1">{{ race.circuit.name }}, {{ race.circuit.country }}</p>
+                                        <small>Betting closes: {{ race.practice_start|date:"M d, Y H:i" }}</small>
                                     </div>
-                                    <p class="mb-1">{{ race.circuit.name }}, {{ race.circuit.country }}</p>
-                                    <small>Betting closes: {{ race.practice_start|date:"M d, Y H:i" }}</small>
-                                    <!-- <img src="{% static 'images/circuit-thumbnails/'|add:race.circuit.name|add:'.png' %}" class="circuit-thumb" alt="{{ race.circuit.name }}"> -->
                                 </a>
                             {% endfor %}
                         </div>
@@ -220,5 +228,58 @@
         }
     });
 </script>
+
+<script>
+    const COUNTRY_CODES = {
+    'Monaco': 'MC',
+    'Italy': 'IT',
+    'Monza': 'IT',
+    'UK': 'GB',
+    'United Kingdom': 'GB',
+    'Silverstone': 'GB',
+    'Spain': 'ES',
+    'Barcelona': 'ES',
+    'Austria': 'AT',
+    'Red Bull Ring': 'AT',
+    'Belgium': 'BE',
+    'Spa': 'BE',
+    'Netherlands': 'NL',
+    'Zandvoort': 'NL',
+    'France': 'FR',
+    'Paul Ricard': 'FR',
+    'Portugal': 'PT',
+    'Portimão': 'PT',
+    'USA': 'US',
+    'United States': 'US',
+    'Austin': 'US',
+    'Mexico': 'MX',
+    'Brazil': 'BR',
+    'Australia': 'AU',
+    'Bahrain': 'BH',
+    'Saudi Arabia': 'SA',
+    'UAE': 'AE',
+    'Abu Dhabi': 'AE',
+    'Japan': 'JP',
+    'Singapore': 'SG'
+};
+
+// Helper function to get country code
+function getCountryCode(countryName) {
+    return COUNTRY_CODES[countryName] || '';
+}
+</script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('[data-country]').forEach(function(el) {
+            const countryName = el.getAttribute('data-country');
+            const countryCode = getCountryCode(countryName);
+            if (countryCode) {
+                el.classList.add(`fi-${countryCode.toLowerCase()}`);
+            }
+        });
+    });
+</script>
+
 {% endif %}
 {% endblock %}

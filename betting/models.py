@@ -55,8 +55,10 @@ class Bet(models.Model):
     dnf_prediction = models.IntegerField()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    points = models.IntegerField(default=0)  # Points awarded after race
-    
+    points = models.FloatField(default=0.0)  # Points awarded after race
+    extraPoints = models.FloatField(default=0.0) # Extra points (for example when user joins in the middle of the season)
+    comments = models.TextField(blank=True, null=True)  # Reason for the extra points or any other admin comments
+
     def __str__(self):
         return f"{self.user.username}'s bet for {self.race}"
     
@@ -88,9 +90,11 @@ class RaceResult(models.Model):
         if self.race.is_sprint:
             podium_correct_position_points = 1.5
             podium_wrong_position_points = 0.5
+            dnf_points = 1
         else:
             podium_correct_position_points = 3
             podium_wrong_position_points = 1
+            dnf_points = 2
 
         for bet in bets:
             points = 0
@@ -116,7 +120,6 @@ class RaceResult(models.Model):
 
             # RACE - Create lists of actual and predicted podium drivers
             actual_podium = [self.first_place_race, self.second_place_race, self.third_place_race]
-            predicted_podium = [bet.first_place_race, bet.second_place_race, bet.third_place_race]
             
             # Check for exact matches (right driver in right position: 3 points)
             if bet.first_place_race == self.first_place_race:
@@ -136,10 +139,10 @@ class RaceResult(models.Model):
             
             # Check DNF prediction
             if bet.dnf_prediction == self.dnf_count:
-                points += 2
+                points += dnf_points
                 
-            # Update bet points
-            bet.points = points
+            # Update bet points (add eventual extra points)
+            bet.points = points + bet.extraPoints
             bet.save()
         
         return bets.count()  # Return number of bets processed

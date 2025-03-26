@@ -19,6 +19,9 @@ from django.urls import path, include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('betting.urls')),
+    
+    # Include default Django auth URLs (like logout, password reset, etc.)
     path('accounts/', include('django.contrib.auth.urls')),
+
+    path('', include('betting.urls')),
 ]

@@ -53,6 +53,9 @@
                         <div class="alert alert-info mt-3">
                             <h5>Points earned: {{ user_bet.points }}</h5>
                         </div>
+                        {% if user_bet.extraPoints > 0 %}
+                            <p>Extra points: {{ user_bet.extraPoints }} ({{ user_bet.comments }})</p>
+                        {% endif %}
                     {% else %}
                         <p>You did not place a bet for this race.</p>
                     {% endif %}

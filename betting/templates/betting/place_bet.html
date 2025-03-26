@@ -74,11 +74,11 @@
         
         <div class="card mb-4">
             <div class="card-header">
-                <h3>DNF Prediction</h3>
+                <h3>DNF (and DNS) Prediction</h3>
             </div>
             <div class="card-body">
                 <div class="form-group">
-                    <label for="{{ form.dnf_prediction.id_for_label }}">Number of DNFs:</label>
+                    <label for="{{ form.dnf_prediction.id_for_label }}">Number of DNF (and DNS):</label>
                     {{ form.dnf_prediction }}
                     {% if form.dnf_prediction.errors %}
                         <div class="text-danger">{{ form.dnf_prediction.errors }}</div>

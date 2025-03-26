@@ -112,14 +112,108 @@
         <div class="col-12">
             <div class="card">
                 <div class="card-header">
-                    <h2>Classification Evolution (Work in Progress)</h2>
+                    <h2>Classification Evolution</h2>
                 </div>
                 <div class="card-body">
-                    <canvas id="classificationChart"></canvas>
+                    <div><canvas id="classificationChart"></canvas></div>
                 </div>
             </div>
         </div>
     </div>
     {% endif %}
 </div>
+{% endblock %}
+
+{% block extra_js %}
+{% if completed_races and classification_json %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const ctx = document.getElementById('classificationChart').getContext('2d');
+        
+        // Parse the JSON safely
+        const classificationData = JSON.parse('{{ classification_json|escapejs }}');
+        const raceNames = JSON.parse('{{ race_names_json|escapejs }}'); // Get race names from template
+        
+        console.log(classificationData); // Debugging line to check the data structure
+        console.log(raceNames); // Debugging line to check the race names
+
+        Object.values(classificationData).forEach(userData => {
+            console.log(userData.username, userData.cumulative_points);
+        });
+        
+        // Prepare data for classification graph
+        function prepare_classification_graph_data(classificationData, raceNames) {
+            // Generate datasets from the classification data
+            const datasets = Object.values(classificationData).map(userData => {
+                // Ensure cumulative_points exists and is an array
+                const pointsData = userData.cumulative_points || [];
+                
+                return {
+                    label: userData.username,
+                    data: pointsData,
+                    fill: false,
+                    borderColor: getRandomColor(),
+                    tension: 0.1
+                };
+            });
+            
+            return {
+                labels: raceNames, // Use the race names here for the x-axis
+                datasets: datasets
+            };
+        }
+        
+        // Call the function to prepare data for the chart
+        const graphData = prepare_classification_graph_data(classificationData, raceNames);
+
+        // Only create chart if we have data
+        if (graphData.datasets.length > 0 && graphData.labels.length > 0) {
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: graphData.labels, // Use the labels (race names) for x-axis
+                    datasets: graphData.datasets // Use the datasets for player data
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        title: {
+                            display: false,
+                            text: 'User Points Evolution'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Cumulative Points'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Races'
+                            }
+                        }
+                    }
+                }
+            });
+        } else {
+            console.warn('Not enough data to create chart');
+        }
+
+        // Utility function to generate random colors
+        function getRandomColor() {
+            const letters = '0123456789ABCDEF';
+            let color = '#';
+            for (let i = 0; i < 6; i++) {
+                color += letters[Math.floor(Math.random() * 16)];
+            }
+            return color;
+        }
+    });
+</script>
+{% endif %}
 {% endblock %}

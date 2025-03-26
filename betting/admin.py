@@ -27,7 +27,7 @@ class DriverAdmin(admin.ModelAdmin):
 
 @admin.register(Bet)
 class BetAdmin(admin.ModelAdmin):
-    list_display = ('user', 'race', 'first_place_quali', 'second_place_quali', 'third_place_quali', 'first_place_race', 'second_place_race', 'third_place_race', 'dnf_prediction', 'points')
+    list_display = ('user', 'race', 'first_place_quali', 'second_place_quali', 'third_place_quali', 'first_place_race', 'second_place_race', 'third_place_race', 'dnf_prediction', 'points', 'extraPoints', 'comments')
     list_filter = ('race__season', 'race')
     search_fields = ('user__username',)
 

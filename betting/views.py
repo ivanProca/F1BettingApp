@@ -38,7 +38,7 @@ def home(request):
     ).order_by('-total_points')[:10]
     
     # Prepare data for classification line graph
-    classification_data = prepare_classification_graph_data(current_season)
+    classification_data, race_names = prepare_classification_graph_data(current_season)
     
     # Convert classification data to JSON for template
     classification_json = json.dumps({
@@ -48,11 +48,15 @@ def home(request):
         } for username, data in classification_data.items()
     })
     
+    # Convert race names to JSON for template
+    race_names_json = json.dumps(race_names)
+    
     return render(request, 'betting/home.html', {
         'upcoming_races': upcoming_races,
         'completed_races': completed_races,
         'leaderboard': leaderboard,
         'classification_json': classification_json,
+        'race_names_json': race_names_json,  # Passing race names to the template
     })
 
 def prepare_classification_graph_data(season):
@@ -67,6 +71,7 @@ def prepare_classification_graph_data(season):
     
     # Prepare data structure for graph
     classification_evolution = {}
+    race_names = [race.name for race in completed_races]  # Extract race names
     
     # Iterate through races to build cumulative points
     for race in completed_races:
@@ -101,7 +106,8 @@ def prepare_classification_graph_data(season):
         
         data['cumulative_points'] = cumulative_points
     
-    return classification_evolution
+    return classification_evolution, race_names
+
 
 @login_required
 def race_detail(request, race_id):
@@ -291,7 +297,7 @@ def login_view(request):
         else:
             messages.error(request, 'Invalid username or password.')
     
-    return render(request, 'home.html')
+    return render(request, 'betting/login.html')
 
 def rules_page(request):
     return render(request, 'betting/rules.html')

@@ -117,7 +117,9 @@
                     <h2>Classification Evolution</h2>
                 </div>
                 <div class="card-body">
+                    <div class="chart-container" style="position: relative; height:40vh; width:80vw">
                     <canvas id="classificationChart"></canvas>
+                </div>
                 </div>
             </div>
         </div>
@@ -179,6 +181,7 @@
                 },
                 options: {
                     responsive: true,
+                    maintainAspectRatio: false,
                     plugins: {
                         title: {
                             display: false,

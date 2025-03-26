@@ -142,3 +142,4 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # Add these lines at the end of the file
 LOGIN_REDIRECT_URL = 'login'
 LOGOUT_REDIRECT_URL = 'home'
+LOGIN_URL = '/login/'  # Redirect to your custom login page

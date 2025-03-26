@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load static %}
+
 {% block content %}
 <div class="hero-section mb-4">
     <div class="hero-overlay"></div>
@@ -36,6 +37,7 @@
                                     </div>
                                     <p class="mb-1">{{ race.circuit.name }}, {{ race.circuit.country }}</p>
                                     <small>Betting closes: {{ race.practice_start|date:"M d, Y H:i" }}</small>
+                                    <!-- <img src="{% static 'images/circuit-thumbnails/'|add:race.circuit.name|add:'.png' %}" class="circuit-thumb" alt="{{ race.circuit.name }}"> -->
                                 </a>
                             {% endfor %}
                         </div>
@@ -115,7 +117,7 @@
                     <h2>Classification Evolution</h2>
                 </div>
                 <div class="card-body">
-                    <div><canvas id="classificationChart"></canvas></div>
+                    <canvas id="classificationChart"></canvas>
                 </div>
             </div>
         </div>

@@ -22,13 +22,13 @@ def home(request):
     upcoming_races = Race.objects.filter(
         season=current_season,
         race_date__gt=timezone.now()
-    ).order_by('race_date')[:5]
+    ).order_by('race_date')[:3]
     
     # Completed races
     completed_races = Race.objects.filter(
         season=current_season,
         is_completed=True
-    ).order_by('race_date')
+    ).order_by('-race_date')[:2]
     
     # Simple leaderboard based on total points
     leaderboard = Bet.objects.filter(
@@ -51,12 +51,19 @@ def home(request):
     # Convert race names to JSON for template
     race_names_json = json.dumps(race_names)
     
+    # Get the last incomplete race for the superuser enter results button
+    last_incomplete_race = Race.objects.filter(
+        season=current_season,
+        is_completed=False
+    ).order_by('race_date').first()
+    
     return render(request, 'betting/home.html', {
         'upcoming_races': upcoming_races,
         'completed_races': completed_races,
         'leaderboard': leaderboard,
         'classification_json': classification_json,
-        'race_names_json': race_names_json,  # Passing race names to the template
+        'race_names_json': race_names_json,
+        'last_incomplete_race': last_incomplete_race,  # Add this for the enter results button
     })
 
 def prepare_classification_graph_data(season):
@@ -200,7 +207,7 @@ def enter_race_result(request, race_id):
         third_place_race_id = request.POST.get('third_place_race')
         dnf_count = request.POST.get('dnf_count')
         
-        # Create or update race result
+        # Create or update race result directly using the calculate_points_for_bets method
         result, created = RaceResult.objects.update_or_create(
             race=race,
             defaults={
@@ -214,14 +221,7 @@ def enter_race_result(request, race_id):
             }
         )
         
-        # Mark race as completed
-        race.is_completed = True
-        race.dnf_count = dnf_count
-        race.save()
-        
-        # Calculate points for all bets
-        calculate_points(race)
-        
+        # The points will be calculated automatically via the signal in models.py
         messages.success(request, "Race results saved and points calculated.")
         return redirect('race_detail', race_id=race.id)
     
@@ -232,42 +232,6 @@ def enter_race_result(request, race_id):
         'race': race,
         'drivers': active_drivers,
     })
-
-def calculate_points(race):
-    """Calculate points for all bets for a specific race"""
-    race_result = race.result
-    bets = Bet.objects.filter(race=race)
-    
-    for bet in bets:
-        points = 0
-        
-        # Points for correct podium positions
-        if bet.first_place == race_result.first_place:
-            points += 10
-        if bet.second_place == race_result.second_place:
-            points += 5
-        if bet.third_place == race_result.third_place:
-            points += 3
-            
-        # Partial points for correct driver but wrong position
-        drivers = [race_result.first_place, race_result.second_place, race_result.third_place]
-        if bet.first_place in drivers and bet.first_place != race_result.first_place:
-            points += 2
-        if bet.second_place in drivers and bet.second_place != race_result.second_place:
-            points += 1
-        if bet.third_place in drivers and bet.third_place != race_result.third_place:
-            points += 1
-            
-        # Points for correct DNF count
-        if bet.dnf_prediction == race_result.dnf_count:
-            points += 5
-        # Partial points for close DNF prediction
-        elif abs(bet.dnf_prediction - race_result.dnf_count) == 1:
-            points += 2
-            
-        # Save points
-        bet.points = points
-        bet.save()
 
 def register_view(request):
     if request.method == 'POST':
@@ -301,3 +265,12 @@ def login_view(request):
 
 def rules_page(request):
     return render(request, 'betting/rules.html')
+
+def all_races_view(request):
+    # Get all races, ordered by date
+    all_races = Race.objects.all().order_by('race_date')
+    
+    context = {
+        'all_races': all_races
+    }
+    return render(request, 'betting/all_races.html', context)

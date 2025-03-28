@@ -410,3 +410,185 @@
   background-repeat: no-repeat;
   background-size: cover;
 }
+
+/* Sprint race visual indicators */
+.list-group-item.sprint-race {
+  border-left: 4px solid var(--f1-accent) !important; /* Distinctive border */
+  background-color: rgba(0, 144, 212, 0.05) !important; /* Light blue background hint */
+}
+
+.sprint-race .race-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background-color: var(--f1-accent);
+  color: white;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.sprint-race h5::before {
+  content: "⚡ "; /* Lightning bolt emoji as a sprint indicator */
+  margin-right: 5px;
+  font-size: 0.9em;
+}
+
+/* Responsive sprint badge */
+@media (max-width: 768px) {
+  .sprint-race .race-badge {
+      position: static;
+      margin-left: 10px;
+      align-self: center;
+  }
+}
+
+.race-timeline {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+}
+
+.race-card {
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.race-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.race-card-body {
+    padding: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.race-completed {
+    border-left: 4px solid #28a745;
+}
+
+.race-upcoming {
+    border-left: 4px solid #ffc107;
+}
+
+.race-sprint {
+    background-color: rgba(0, 144, 212, 0.05);
+}
+
+.race-filters {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+}
+
+@media (max-width: 768px) {
+    .race-timeline {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Races Page Styling */
+.races-overview {
+  background-color: #f4f4f4;
+  padding: 2rem 0;
+}
+
+.races-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 1.5rem;
+}
+
+.race-item {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.race-item:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+}
+
+.race-item-inner {
+  display: flex;
+  flex-direction: column;
+}
+
+.race-thumbnail {
+  height: 200px;
+  overflow: hidden;
+}
+
+.race-thumbnail img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.race-item:hover .race-thumbnail img {
+  transform: scale(1.05);
+}
+
+.race-details {
+  padding: 1rem;
+}
+
+.race-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.race-title {
+  font-weight: 700;
+  margin: 0;
+  display: flex;
+  align-items: center;
+}
+
+.race-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.race-sprint {
+  background-color: rgba(0, 144, 212, 0.05);
+}
+
+.race-sprint .race-item-inner::before {
+  content: 'Sprint';
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background-color: var(--f1-accent);
+  color: white;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 0.7rem;
+}
+
+@media (max-width: 768px) {
+  .races-list {
+      grid-template-columns: 1fr;
+  }
+}

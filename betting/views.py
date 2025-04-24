@@ -2,6 +2,8 @@
 
 import json
 
+from django.conf import settings
+
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
@@ -128,12 +130,80 @@ def race_detail(request, race_id):
     if race.is_completed:
         race_result = race.result
         all_bets = Bet.objects.filter(race=race).order_by('-points')
-        return render(request, 'betting/race_results.html', {
+
+        # Create lists for podium comparisons in template
+        quali_podium = [race_result.first_place_quali, race_result.second_place_quali, race_result.third_place_quali]
+        race_podium = [race_result.first_place_race, race_result.second_place_race, race_result.third_place_race]
+        
+        # Calculate point breakdown for user bet
+        quali_points = 0
+        race_points = 0
+        dnf_points = 0
+        
+        if user_bet:
+            # Get point values based on race type
+            point_values = race_result.get_point_values()
+            podium_correct_position_points = point_values['PODIUM_CORRECT_POSITION']
+            podium_wrong_position_points = point_values['PODIUM_WRONG_POSITION']
+            dnf_correct_points = point_values['DNF_CORRECT']
+            
+            # Calculate QUALI points
+            if user_bet.first_place_quali == race_result.first_place_quali:
+                quali_points += podium_correct_position_points
+            elif user_bet.first_place_quali in quali_podium:
+                quali_points += podium_wrong_position_points
+                
+            if user_bet.second_place_quali == race_result.second_place_quali:
+                quali_points += podium_correct_position_points
+            elif user_bet.second_place_quali in quali_podium:
+                quali_points += podium_wrong_position_points
+                
+            if user_bet.third_place_quali == race_result.third_place_quali:
+                quali_points += podium_correct_position_points
+            elif user_bet.third_place_quali in quali_podium:
+                quali_points += podium_wrong_position_points
+            
+            # Calculate RACE points
+            if user_bet.first_place_race == race_result.first_place_race:
+                race_points += podium_correct_position_points
+            elif user_bet.first_place_race in race_podium:
+                race_points += podium_wrong_position_points
+                
+            if user_bet.second_place_race == race_result.second_place_race:
+                race_points += podium_correct_position_points
+            elif user_bet.second_place_race in race_podium:
+                race_points += podium_wrong_position_points
+                
+            if user_bet.third_place_race == race_result.third_place_race:
+                race_points += podium_correct_position_points
+            elif user_bet.third_place_race in race_podium:
+                race_points += podium_wrong_position_points
+            
+            # Calculate DNF points
+            if user_bet.dnf_prediction == race_result.dnf_count:
+                dnf_points = dnf_correct_points
+        
+        # Pass the point values to the template for display
+        point_values = race_result.get_point_values()
+        
+        point_values = race_result.get_point_values()
+        total_possible_points = (point_values['PODIUM_CORRECT_POSITION'] * 6) + point_values['DNF_CORRECT']
+
+        context = {
             'race': race,
-            'user_bet': user_bet,
             'race_result': race_result,
+            'user_bet': user_bet,
             'all_bets': all_bets,
-        })
+            'quali_podium': quali_podium,
+            'race_podium': race_podium,
+            'quali_points': quali_points,
+            'race_points': race_points,
+            'dnf_points': dnf_points,
+            'point_values': point_values,  # Pass the point values to the template
+            'total_possible_points': total_possible_points
+        }
+
+        return render(request, 'betting/race_results.html', context)
     
     # If betting is still open, show form
     if not betting_closed:

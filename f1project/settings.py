@@ -120,7 +120,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Europe/Rome'
 
 USE_I18N = True
 
@@ -143,3 +143,17 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 LOGIN_REDIRECT_URL = 'login'
 LOGOUT_REDIRECT_URL = 'home'
 LOGIN_URL = '/login/'  # Redirect to your custom login page
+
+# F1 Betting Points Configuration
+F1_BETTING = {
+    'REGULAR_RACE': {
+        'PODIUM_CORRECT_POSITION': 3.0,    # Right driver in right position
+        'PODIUM_WRONG_POSITION': 1.0,      # Right driver on podium but wrong position
+        'DNF_CORRECT': 2.0,                # Correct DNF prediction
+    },
+    'SPRINT_RACE': {
+        'PODIUM_CORRECT_POSITION': 1.5,    # Right driver in right position
+        'PODIUM_WRONG_POSITION': 0.5,      # Right driver on podium but wrong position
+        'DNF_CORRECT': 1.0,                # Correct DNF prediction
+    }
+}

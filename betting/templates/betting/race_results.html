@@ -39,23 +39,76 @@
                     {% if user_bet %}
                         <h5>QUALI - Your Podium Prediction:</h5>
                         <ol>
-                            <li>{{ user_bet.first_place_quali }}</li>
-                            <li>{{ user_bet.second_place_quali }}</li>
-                            <li>{{ user_bet.third_place_quali }}</li>
+                            <li>
+                                {{ user_bet.first_place_quali }}
+                                {% if user_bet.first_place_quali == race_result.first_place_quali %}
+                                    <span class="badge bg-success">+{{ point_values.PODIUM_CORRECT_POSITION }}</span>
+                                {% elif user_bet.first_place_quali in quali_podium %}
+                                    <span class="badge bg-info">+{{ point_values.PODIUM_WRONG_POSITION }}</span>
+                                {% endif %}
+                            </li>
+                            <li>
+                                {{ user_bet.second_place_quali }}
+                                {% if user_bet.second_place_quali == race_result.second_place_quali %}
+                                    <span class="badge bg-success">+{{ point_values.PODIUM_CORRECT_POSITION }}</span>
+                                {% elif user_bet.second_place_quali in quali_podium %}
+                                    <span class="badge bg-info">+{{ point_values.PODIUM_WRONG_POSITION }}</span>
+                                {% endif %}
+                            </li>
+                            <li>
+                                {{ user_bet.third_place_quali }}
+                                {% if user_bet.third_place_quali == race_result.third_place_quali %}
+                                    <span class="badge bg-success">+{{ point_values.PODIUM_CORRECT_POSITION }}</span>
+                                {% elif user_bet.third_place_quali in quali_podium %}
+                                    <span class="badge bg-info">+{{ point_values.PODIUM_WRONG_POSITION }}</span>
+                                {% endif %}
+                            </li>
                         </ol>
                         <h5>RACE - Your Podium Prediction:</h5>
                         <ol>
-                            <li>{{ user_bet.first_place_race }}</li>
-                            <li>{{ user_bet.second_place_race }}</li>
-                            <li>{{ user_bet.third_place_race }}</li>
+                            <li>
+                                {{ user_bet.first_place_race }}
+                                {% if user_bet.first_place_race == race_result.first_place_race %}
+                                    <span class="badge bg-success">Correct Position!</span>
+                                {% elif user_bet.first_place_race in race_podium %}
+                                    <span class="badge bg-info">{{ point_values.PODIUM_WRONG_POSITION }}</span>
+                                {% endif %}
+                            </li>
+                            <li>
+                                {{ user_bet.second_place_race }}
+                                {% if user_bet.second_place_race == race_result.second_place_race %}
+                                    <span class="badge bg-success">+{{ point_values.PODIUM_CORRECT_POSITION }}</span>
+                                {% elif user_bet.second_place_race in race_podium %}
+                                    <span class="badge bg-info">+{{ point_values.PODIUM_WRONG_POSITION }}</span>
+                                {% endif %}
+                            </li>
+                            <li>
+                                {{ user_bet.third_place_race }}
+                                {% if user_bet.third_place_race == race_result.third_place_race %}
+                                    <span class="badge bg-success">+{{ point_values.PODIUM_CORRECT_POSITION }}</span>
+                                {% elif user_bet.third_place_race in race_podium %}
+                                    <span class="badge bg-info">+{{ point_values.PODIUM_WRONG_POSITION }}</span>
+                                {% endif %}
+                            </li>
                         </ol>
-                        <h5>Your DNF Prediction: {{ user_bet.dnf_prediction }}</h5>
+                        <h5>
+                            Your DNF Prediction: {{ user_bet.dnf_prediction }}
+                            {% if user_bet.dnf_prediction == race_result.dnf_count %}
+                                <span class="badge bg-warning text-dark">+{{ point_values.DNF_CORRECT }}</span>
+                            {% endif %}
+                        </h5>
                         <div class="alert alert-info mt-3">
                             <h5>Points earned: {{ user_bet.points }}</h5>
                         </div>
                         {% if user_bet.extraPoints > 0 %}
                             <p>Extra points: {{ user_bet.extraPoints }} ({{ user_bet.comments }})</p>
                         {% endif %}
+
+<!--                         <ul>
+                            <li><span class="badge bg-success">Correct Position: +{{ point_values.PODIUM_CORRECT_POSITION }} point(s)</span></li>
+                            <li><span class="badge bg-info">On Podium: {{ point_values.PODIUM_WRONG_POSITION }} point(s)</span></li>
+                            <li><span class="badge bg-warning text-dark">Correct DNF prediction: {{ point_values.DNF_CORRECT }}</span></li>
+                        </ul> -->
                     {% else %}
                         <p>You did not place a bet for this race.</p>
                     {% endif %}
@@ -89,13 +142,60 @@
                             {% for bet in all_bets %}
                                 <tr {% if bet.user == user %}class="table-primary"{% endif %}>
                                     <td>{{ bet.user.username }}</td>
-                                    <td>{{ bet.first_place_quali.code }}</td>
-                                    <td>{{ bet.second_place_quali.code }}</td>
-                                    <td>{{ bet.third_place_quali.code }}</td>
-                                    <td>{{ bet.first_place_race.code }}</td>
-                                    <td>{{ bet.second_place_race.code }}</td>
-                                    <td>{{ bet.third_place_race.code }}</td>
-                                    <td>{{ bet.dnf_prediction }}</td>
+                                    <td>
+                                        {{ bet.first_place_quali.code }}
+                                        {% if bet.first_place_quali == race_result.first_place_quali %}
+                                            <span class="badge bg-success">+{{ point_values.PODIUM_CORRECT_POSITION }}</span>
+                                        {% elif bet.first_place_quali in quali_podium %}
+                                            <span class="badge bg-info">+{{ point_values.PODIUM_WRONG_POSITION }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {{ bet.second_place_quali.code }}
+                                        {% if user_bet.second_place_quali == race_result.second_place_quali %}
+                                            <span class="badge bg-success">+{{ point_values.PODIUM_CORRECT_POSITION }}</span>
+                                        {% elif user_bet.second_place_quali in quali_podium %}
+                                            <span class="badge bg-info">+{{ point_values.PODIUM_WRONG_POSITION }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {{ bet.third_place_quali.code }}
+                                        {% if user_bet.third_place_quali == race_result.third_place_quali %}
+                                            <span class="badge bg-success">+{{ point_values.PODIUM_CORRECT_POSITION }}</span>
+                                        {% elif user_bet.third_place_quali in quali_podium %}
+                                            <span class="badge bg-info">+{{ point_values.PODIUM_WRONG_POSITION }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {{ bet.first_place_race.code }}
+                                        {% if user_bet.first_place_race == race_result.first_place_race %}
+                                            <span class="badge bg-success">Correct Position!</span>
+                                        {% elif user_bet.first_place_race in race_podium %}
+                                            <span class="badge bg-info">{{ point_values.PODIUM_WRONG_POSITION }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {{ bet.second_place_race.code }}
+                                        {% if user_bet.second_place_race == race_result.second_place_race %}
+                                            <span class="badge bg-success">+{{ point_values.PODIUM_CORRECT_POSITION }}</span>
+                                        {% elif user_bet.second_place_race in race_podium %}
+                                            <span class="badge bg-info">+{{ point_values.PODIUM_WRONG_POSITION }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {{ bet.third_place_race.code }}
+                                        {% if user_bet.third_place_race == race_result.third_place_race %}
+                                            <span class="badge bg-success">+{{ point_values.PODIUM_CORRECT_POSITION }}</span>
+                                        {% elif user_bet.third_place_race in race_podium %}
+                                            <span class="badge bg-info">+{{ point_values.PODIUM_WRONG_POSITION }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {{ bet.dnf_prediction }}
+                                        {% if user_bet.dnf_prediction == race_result.dnf_count %}
+                                            <span class="badge bg-warning text-dark">+{{ point_values.DNF_CORRECT }}</span>
+                                        {% endif %}
+                                    </td>
                                     <td><strong>{{ bet.points }}</strong></td>
                                 </tr>
                             {% endfor %}
@@ -105,6 +205,31 @@
             {% else %}
                 <p>No bets placed for this race.</p>
             {% endif %}
+        </div>
+    </div>
+
+    <div class="card mt-4">
+        <div class="card-header bg-secondary text-white">
+            <h2>Scoring System</h2>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>For {% if race.is_sprint %}Sprint{% else %}Regular{% endif %} Races:</h5>
+                    <ul>
+                        <li>Driver in correct podium position: <span class="badge bg-success">{{ point_values.PODIUM_CORRECT_POSITION }} points</span></li>
+                        <li>Driver on podium but wrong position: <span class="badge bg-info">{{ point_values.PODIUM_WRONG_POSITION }} points</span></li>
+                        <li>Correct DNF prediction: <span class="badge bg-warning text-dark">{{ point_values.DNF_CORRECT }} points</span></li>
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <p class="text-muted">
+                        Points are awarded separately for qualifying and race predictions.
+                        The total possible points for this race is:
+                        <strong>{{ point_values.PODIUM_CORRECT_POSITION|floatformat:"1" }} × 6 + {{ point_values.DNF_CORRECT|floatformat:"1" }} = {{ total_possible_points|floatformat:"1" }} points</strong>
+                    </p>
+                </div>
+            </div>
         </div>
     </div>
 </div>

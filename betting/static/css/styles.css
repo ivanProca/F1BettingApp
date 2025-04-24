@@ -538,7 +538,7 @@
 .race-thumbnail img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
   transition: transform 0.3s ease;
 }
 
@@ -575,7 +575,7 @@
   background-color: rgba(0, 144, 212, 0.05);
 }
 
-.race-sprint .race-item-inner::before {
+/* .race-sprint .race-item-inner::before {
   content: 'Sprint';
   position: absolute;
   top: 10px;
@@ -585,7 +585,7 @@
   padding: 3px 8px;
   border-radius: 4px;
   font-size: 0.7rem;
-}
+} */
 
 @media (max-width: 768px) {
   .races-list {

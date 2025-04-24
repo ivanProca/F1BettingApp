@@ -113,7 +113,8 @@ const COUNTRY_CODES = {
 document.addEventListener('DOMContentLoaded', function() {
     // Country Flag Setup
     document.querySelectorAll('.country-flag').forEach(function(el) {
-        const countryName = el.closest('.race-header').querySelector('h3').getAttribute('data-country');
+        const countryName = el.getAttribute('data-country');
+        //const countryName = el.closest('.race-header').querySelector('h3').getAttribute('data-country');
         const countryCode = COUNTRY_CODES[countryName]?.toLowerCase();
         
         if (countryCode) {

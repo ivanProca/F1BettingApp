@@ -110,13 +110,15 @@
                               {% elif "+" in standing.position_change %}
                                 {% with change_value=standing.position_change|slice:"1:" %}
                                   <span class="position-up">
-                                    <i class="fas fa-arrow-up"></i>⬆ {{ change_value }}
+                                    <!-- &#x25b2 Up Arrow -->
+                                    <i class="fas fa-arrow-up"></i>&#x25b2 {{ change_value }}
                                   </span>
                                 {% endwith %}
                               {% else %}
                                 {% with change_value=standing.position_change|slice:"1:" %}
                                   <span class="position-down">
-                                    <i class="fas fa-arrow-down"></i>⬇ {{ change_value }}
+                                    <!-- &#x25bc Down Arrow -->
+                                    <i class="fas fa-arrow-down"></i>&#x25bc {{ change_value }}
                                   </span>
                                 {% endwith %}
                               {% endif %}

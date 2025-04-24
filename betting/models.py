@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from django.conf import settings
 
 class Season(models.Model):
     year = models.IntegerField(unique=True)
@@ -78,6 +79,12 @@ class RaceResult(models.Model):
     def __str__(self):
         return f"Results for {self.race}"
     
+    def get_point_values(self):
+        """Return the point values based on race type."""
+        if self.race.is_sprint:
+            return settings.F1_BETTING['SPRINT_RACE']
+        return settings.F1_BETTING['REGULAR_RACE']
+
     def calculate_points_for_bets(self):
         """Calculate points for all bets on this race."""
         bets = Bet.objects.filter(race=self.race)
@@ -87,6 +94,12 @@ class RaceResult(models.Model):
         self.race.dnf_count = self.dnf_count
         self.race.save()
         
+        # Get point values based on race type
+        point_values = self.get_point_values()
+        podium_correct_position_points = point_values['PODIUM_CORRECT_POSITION']
+        podium_wrong_position_points = point_values['PODIUM_WRONG_POSITION']
+        dnf_points = point_values['DNF_CORRECT']
+
         if self.race.is_sprint:
             podium_correct_position_points = 1.5
             podium_wrong_position_points = 0.5

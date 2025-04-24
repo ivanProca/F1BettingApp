@@ -2,6 +2,8 @@
 
 import json
 
+from django.conf import settings
+
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
@@ -22,10 +24,16 @@ def home(request):
     upcoming_races = Race.objects.filter(
         season=current_season,
         race_date__gt=timezone.now()
-    ).order_by('race_date')[:5]
+    ).order_by('race_date')[:3]
     
     # Completed races
     completed_races = Race.objects.filter(
+        season=current_season,
+        is_completed=True
+    ).order_by('-race_date')[:2]
+    
+    # Get all completed races
+    all_completed_races = Race.objects.filter(
         season=current_season,
         is_completed=True
     ).order_by('race_date')
@@ -36,6 +44,49 @@ def home(request):
     ).values('user__username').annotate(
         total_points=Sum('points')
     ).order_by('-total_points')[:10]
+    
+    # Create a dictionary to track position changes
+    leaderboard_list = list(leaderboard)
+    
+    # Check if we have at least 2 races to compare positions
+    if all_completed_races.count() >= 2:
+        # Get the most recent race
+        last_race = all_completed_races.last()
+        
+        # Get all races except the last one
+        previous_races = all_completed_races.exclude(id=last_race.id)
+        
+        # Calculate previous standings (before the last race)
+        previous_leaderboard = Bet.objects.filter(
+            race__season=current_season,
+            race__in=previous_races
+        ).values('user__username').annotate(
+            total_points=Sum('points')
+        ).order_by('-total_points')
+        
+        # Create a dictionary of previous positions
+        previous_positions = {item['user__username']: i+1 for i, item in enumerate(previous_leaderboard)}
+        
+        # Now add position_change to each leaderboard item
+        for i, item in enumerate(leaderboard_list):
+            username = item['user__username']
+            current_position = i + 1
+            previous_position = previous_positions.get(username, 0)
+            
+            if previous_position == 0:
+                item['position_change'] = "NEW"
+            else:
+                position_change = previous_position - current_position
+                if position_change > 0:
+                    item['position_change'] = f"+{position_change}"
+                elif position_change < 0:
+                    item['position_change'] = str(position_change)
+                else:
+                    item['position_change'] = "-"
+    else:
+        # If we don't have enough races, set all position changes to "-"
+        for item in leaderboard_list:
+            item['position_change'] = "-"
     
     # Prepare data for classification line graph
     classification_data, race_names = prepare_classification_graph_data(current_season)
@@ -51,12 +102,20 @@ def home(request):
     # Convert race names to JSON for template
     race_names_json = json.dumps(race_names)
     
+    # Get the last incomplete race for the superuser enter results button
+    last_incomplete_race = Race.objects.filter(
+        season=current_season,
+        is_completed=False
+    ).order_by('race_date').first()
+    
     return render(request, 'betting/home.html', {
         'upcoming_races': upcoming_races,
         'completed_races': completed_races,
         'leaderboard': leaderboard,
+        'position_changes': leaderboard_list,
         'classification_json': classification_json,
-        'race_names_json': race_names_json,  # Passing race names to the template
+        'race_names_json': race_names_json,
+        'last_incomplete_race': last_incomplete_race,
     })
 
 def prepare_classification_graph_data(season):
@@ -121,12 +180,80 @@ def race_detail(request, race_id):
     if race.is_completed:
         race_result = race.result
         all_bets = Bet.objects.filter(race=race).order_by('-points')
-        return render(request, 'betting/race_results.html', {
+
+        # Create lists for podium comparisons in template
+        quali_podium = [race_result.first_place_quali, race_result.second_place_quali, race_result.third_place_quali]
+        race_podium = [race_result.first_place_race, race_result.second_place_race, race_result.third_place_race]
+        
+        # Calculate point breakdown for user bet
+        quali_points = 0
+        race_points = 0
+        dnf_points = 0
+        
+        if user_bet:
+            # Get point values based on race type
+            point_values = race_result.get_point_values()
+            podium_correct_position_points = point_values['PODIUM_CORRECT_POSITION']
+            podium_wrong_position_points = point_values['PODIUM_WRONG_POSITION']
+            dnf_correct_points = point_values['DNF_CORRECT']
+            
+            # Calculate QUALI points
+            if user_bet.first_place_quali == race_result.first_place_quali:
+                quali_points += podium_correct_position_points
+            elif user_bet.first_place_quali in quali_podium:
+                quali_points += podium_wrong_position_points
+                
+            if user_bet.second_place_quali == race_result.second_place_quali:
+                quali_points += podium_correct_position_points
+            elif user_bet.second_place_quali in quali_podium:
+                quali_points += podium_wrong_position_points
+                
+            if user_bet.third_place_quali == race_result.third_place_quali:
+                quali_points += podium_correct_position_points
+            elif user_bet.third_place_quali in quali_podium:
+                quali_points += podium_wrong_position_points
+            
+            # Calculate RACE points
+            if user_bet.first_place_race == race_result.first_place_race:
+                race_points += podium_correct_position_points
+            elif user_bet.first_place_race in race_podium:
+                race_points += podium_wrong_position_points
+                
+            if user_bet.second_place_race == race_result.second_place_race:
+                race_points += podium_correct_position_points
+            elif user_bet.second_place_race in race_podium:
+                race_points += podium_wrong_position_points
+                
+            if user_bet.third_place_race == race_result.third_place_race:
+                race_points += podium_correct_position_points
+            elif user_bet.third_place_race in race_podium:
+                race_points += podium_wrong_position_points
+            
+            # Calculate DNF points
+            if user_bet.dnf_prediction == race_result.dnf_count:
+                dnf_points = dnf_correct_points
+        
+        # Pass the point values to the template for display
+        point_values = race_result.get_point_values()
+        
+        point_values = race_result.get_point_values()
+        total_possible_points = (point_values['PODIUM_CORRECT_POSITION'] * 6) + point_values['DNF_CORRECT']
+
+        context = {
             'race': race,
-            'user_bet': user_bet,
             'race_result': race_result,
+            'user_bet': user_bet,
             'all_bets': all_bets,
-        })
+            'quali_podium': quali_podium,
+            'race_podium': race_podium,
+            'quali_points': quali_points,
+            'race_points': race_points,
+            'dnf_points': dnf_points,
+            'point_values': point_values,  # Pass the point values to the template
+            'total_possible_points': total_possible_points
+        }
+
+        return render(request, 'betting/race_results.html', context)
     
     # If betting is still open, show form
     if not betting_closed:
@@ -200,7 +327,7 @@ def enter_race_result(request, race_id):
         third_place_race_id = request.POST.get('third_place_race')
         dnf_count = request.POST.get('dnf_count')
         
-        # Create or update race result
+        # Create or update race result directly using the calculate_points_for_bets method
         result, created = RaceResult.objects.update_or_create(
             race=race,
             defaults={
@@ -214,14 +341,7 @@ def enter_race_result(request, race_id):
             }
         )
         
-        # Mark race as completed
-        race.is_completed = True
-        race.dnf_count = dnf_count
-        race.save()
-        
-        # Calculate points for all bets
-        calculate_points(race)
-        
+        # The points will be calculated automatically via the signal in models.py
         messages.success(request, "Race results saved and points calculated.")
         return redirect('race_detail', race_id=race.id)
     
@@ -232,42 +352,6 @@ def enter_race_result(request, race_id):
         'race': race,
         'drivers': active_drivers,
     })
-
-def calculate_points(race):
-    """Calculate points for all bets for a specific race"""
-    race_result = race.result
-    bets = Bet.objects.filter(race=race)
-    
-    for bet in bets:
-        points = 0
-        
-        # Points for correct podium positions
-        if bet.first_place == race_result.first_place:
-            points += 10
-        if bet.second_place == race_result.second_place:
-            points += 5
-        if bet.third_place == race_result.third_place:
-            points += 3
-            
-        # Partial points for correct driver but wrong position
-        drivers = [race_result.first_place, race_result.second_place, race_result.third_place]
-        if bet.first_place in drivers and bet.first_place != race_result.first_place:
-            points += 2
-        if bet.second_place in drivers and bet.second_place != race_result.second_place:
-            points += 1
-        if bet.third_place in drivers and bet.third_place != race_result.third_place:
-            points += 1
-            
-        # Points for correct DNF count
-        if bet.dnf_prediction == race_result.dnf_count:
-            points += 5
-        # Partial points for close DNF prediction
-        elif abs(bet.dnf_prediction - race_result.dnf_count) == 1:
-            points += 2
-            
-        # Save points
-        bet.points = points
-        bet.save()
 
 def register_view(request):
     if request.method == 'POST':
@@ -301,3 +385,12 @@ def login_view(request):
 
 def rules_page(request):
     return render(request, 'betting/rules.html')
+
+def all_races_view(request):
+    # Get all races, ordered by date
+    all_races = Race.objects.all().order_by('race_date')
+    
+    context = {
+        'all_races': all_races
+    }
+    return render(request, 'betting/all_races.html', context)

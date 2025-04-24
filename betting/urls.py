@@ -11,6 +11,7 @@ urlpatterns = [
     path('race/<int:race_id>/enter-results/', views.enter_race_result, name='enter_race_result'),
     path('register/', views.register_view, name='register'),
     path('rules/', views.rules_page, name='rules_page'),
+    path('races/', views.all_races_view, name='all_races'),
 ]
 
 # Add these to main urls.py

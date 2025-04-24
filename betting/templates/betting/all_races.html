@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid px-4">
+    <div class="races-overview">
+        <h1 class="mb-4">2025 Formula 1 Championship</h1>
+
+        <div class="race-filters mb-4 text-center">
+            <div class="btn-group" role="group" aria-label="Race Filters">
+                <input type="radio" class="btn-check" name="race-filter" id="filter-all" autocomplete="off" checked>
+                <label class="btn btn-outline-primary" for="filter-all">All Races</label>
+
+                <input type="radio" class="btn-check" name="race-filter" id="filter-upcoming" autocomplete="off">
+                <label class="btn btn-outline-success" for="filter-upcoming">Upcoming Races</label>
+
+                <input type="radio" class="btn-check" name="race-filter" id="filter-completed" autocomplete="off">
+                <label class="btn btn-outline-secondary" for="filter-completed">Completed Races</label>
+            </div>
+        </div>
+
+        <div class="races-list">
+            {% for race in all_races %}
+                <div class="race-item 
+                    {% if race.is_completed %}race-completed{% else %}race-upcoming{% endif %} 
+                    {% if race.is_sprint %}race-sprint{% endif %}"
+                    data-status="{% if race.is_completed %}completed{% else %}upcoming{% endif %}"
+                    data-sprint="{% if race.is_sprint %}sprint{% else %}regular{% endif %}">
+                    
+                    <div class="race-item-inner">
+                        <div class="race-thumbnail">
+                            <img src="{% static 'images/circuit-thumbnails/'|add:race.circuit.name|add:'.png' %}" 
+                                 alt="{{ race.circuit.name }} Circuit" 
+                                 class="img-fluid circuit-thumbnail">
+                        </div>
+                        
+                        <div class="race-details">
+                            <div class="race-header">
+                                <h3 class="race-title">
+                                    {{ race.name }}
+                                    <span class="country-flag" 
+                                          data-country="{{ race.circuit.country }}"></span>
+                                </h3>
+                                
+                                {% if race.is_sprint %}
+                                    <span class="badge bg-info">Sprint</span>
+                                {% endif %}
+                                
+                                <div class="race-date">
+                                    {{ race.race_date|date:"M d, Y" }}
+                                </div>
+                            </div>
+                            
+                            <div class="race-meta">
+                                <div class="circuit-name">
+                                    <i class="fas fa-map-marker-alt"></i> 
+                                    {{ race.circuit.name }}, {{ race.circuit.country }}
+                                </div>
+                                <div class="race-status">
+                                    {% if race.is_completed %}
+                                        <span class="badge bg-success">Completed</span>
+                                    {% else %}
+                                        <span class="badge bg-warning text-dark">Upcoming</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div class="race-actions">
+                                <a href="{% url 'race_detail' race.id %}" class="btn 
+                                    {% if race.is_completed %}btn-success{% else %}btn-primary{% endif %} btn-sm">
+                                    {% if race.is_completed %}View Results{% else %}Race Details{% endif %}
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        {% if not all_races %}
+            <div class="alert alert-info text-center" role="alert">
+                No races scheduled for this championship.
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const COUNTRY_CODES = {
+    'Monaco': 'MC',
+    'Italy': 'IT',
+    'UK': 'GB',
+    'Spain': 'ES',
+    'Austria': 'AT',
+    'Belgium': 'BE',
+    'Netherlands': 'NL',
+    'France': 'FR',
+    'Portugal': 'PT',
+    'USA': 'US',
+    'Mexico': 'MX',
+    'Brazil': 'BR',
+    'Australia': 'AU',
+    'Bahrain': 'BH',
+    'Saudi Arabia': 'SA',
+    'UAE': 'AE',
+    'Abu Dhabi': 'AE',
+    'Japan': 'JP',
+    'Singapore': 'SG'
+};
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Country Flag Setup
+    document.querySelectorAll('.country-flag').forEach(function(el) {
+        const countryName = el.closest('.race-header').querySelector('h3').getAttribute('data-country');
+        const countryCode = COUNTRY_CODES[countryName]?.toLowerCase();
+        
+        if (countryCode) {
+            el.style.backgroundImage = `url('https://flagcdn.com/w40/${countryCode}.png')`;
+            el.style.width = '32px';
+            el.style.height = '24px';
+            el.style.backgroundSize = 'cover';
+            el.style.display = 'inline-block';
+            el.style.marginLeft = '10px';
+            el.style.verticalAlign = 'middle';
+        }
+    });
+
+    // Filtering Logic
+    const raceItems = document.querySelectorAll('.race-item');
+    const filterButtons = document.querySelectorAll('input[name="race-filter"]');
+
+    filterButtons.forEach(button => {
+        button.addEventListener('change', function() {
+            const filterValue = this.id.split('-')[1];
+
+            raceItems.forEach(item => {
+                const cardStatus = item.getAttribute('data-status');
+                
+                if (filterValue === 'all') {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = cardStatus === filterValue ? 'block' : 'none';
+                }
+            });
+        });
+    });
+});
+</script>
+{% endblock %}

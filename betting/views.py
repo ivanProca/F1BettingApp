@@ -32,12 +32,61 @@ def home(request):
         is_completed=True
     ).order_by('-race_date')[:2]
     
+    # Get all completed races
+    all_completed_races = Race.objects.filter(
+        season=current_season,
+        is_completed=True
+    ).order_by('race_date')
+    
     # Simple leaderboard based on total points
     leaderboard = Bet.objects.filter(
         race__season=current_season
     ).values('user__username').annotate(
         total_points=Sum('points')
     ).order_by('-total_points')[:10]
+    
+    # Create a dictionary to track position changes
+    leaderboard_list = list(leaderboard)
+    
+    # Check if we have at least 2 races to compare positions
+    if all_completed_races.count() >= 2:
+        # Get the most recent race
+        last_race = all_completed_races.last()
+        
+        # Get all races except the last one
+        previous_races = all_completed_races.exclude(id=last_race.id)
+        
+        # Calculate previous standings (before the last race)
+        previous_leaderboard = Bet.objects.filter(
+            race__season=current_season,
+            race__in=previous_races
+        ).values('user__username').annotate(
+            total_points=Sum('points')
+        ).order_by('-total_points')
+        
+        # Create a dictionary of previous positions
+        previous_positions = {item['user__username']: i+1 for i, item in enumerate(previous_leaderboard)}
+        
+        # Now add position_change to each leaderboard item
+        for i, item in enumerate(leaderboard_list):
+            username = item['user__username']
+            current_position = i + 1
+            previous_position = previous_positions.get(username, 0)
+            
+            if previous_position == 0:
+                item['position_change'] = "NEW"
+            else:
+                position_change = previous_position - current_position
+                if position_change > 0:
+                    item['position_change'] = f"+{position_change}"
+                elif position_change < 0:
+                    item['position_change'] = str(position_change)
+                else:
+                    item['position_change'] = "-"
+    else:
+        # If we don't have enough races, set all position changes to "-"
+        for item in leaderboard_list:
+            item['position_change'] = "-"
     
     # Prepare data for classification line graph
     classification_data, race_names = prepare_classification_graph_data(current_season)
@@ -63,9 +112,10 @@ def home(request):
         'upcoming_races': upcoming_races,
         'completed_races': completed_races,
         'leaderboard': leaderboard,
+        'position_changes': leaderboard_list,
         'classification_json': classification_json,
         'race_names_json': race_names_json,
-        'last_incomplete_race': last_incomplete_race,  # Add this for the enter results button
+        'last_incomplete_race': last_incomplete_race,
     })
 
 def prepare_classification_graph_data(season):

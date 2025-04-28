@@ -68,7 +68,7 @@
                             <div class="race-actions">
                                 <a href="{% url 'race_detail' race.id %}" class="btn 
                                     {% if race.is_completed %}btn-success{% else %}btn-primary{% endif %} btn-sm">
-                                    {% if race.is_completed %}View Results{% else %}Race Details{% endif %}
+                                    {% if race.is_completed %}View Results{% else %}Bet on Race{% endif %}
                                 </a>
                             </div>
                         </div>
@@ -88,27 +88,35 @@
 
 {% block extra_js %}
 <script>
-const COUNTRY_CODES = {
-    'Monaco': 'MC',
-    'Italy': 'IT',
-    'UK': 'GB',
-    'Spain': 'ES',
-    'Austria': 'AT',
-    'Belgium': 'BE',
-    'Netherlands': 'NL',
-    'France': 'FR',
-    'Portugal': 'PT',
-    'USA': 'US',
-    'Mexico': 'MX',
-    'Brazil': 'BR',
-    'Australia': 'AU',
-    'Bahrain': 'BH',
-    'Saudi Arabia': 'SA',
-    'UAE': 'AE',
-    'Abu Dhabi': 'AE',
-    'Japan': 'JP',
-    'Singapore': 'SG'
-};
+    const COUNTRY_CODES = {
+        'Monaco': 'MC',
+        'Italy': 'IT',
+        'UK': 'GB',
+        'United Kingdom': 'GB',
+        'Spain': 'ES',
+        'Austria': 'AT',
+        'Belgium': 'BE',
+        'Netherlands': 'NL',
+        'France': 'FR',
+        'Portugal': 'PT',
+        'USA': 'US',
+        'United States': 'US',
+        'Mexico': 'MX',
+        'Brazil': 'BR',
+        'Australia': 'AU',
+        'Bahrain': 'BH',
+        'Saudi Arabia': 'SA',
+        'UAE': 'AE',
+        'Abu Dhabi': 'AE',
+        'Japan': 'JP',
+        'Singapore': 'SG',
+        'China': 'CN',
+        'Canada': 'CA',
+        'Russia': 'RU',
+        'Hungary': 'HU',
+        'Azerbaijan': 'AZ',
+        'Qatar': 'QA'
+    };
 
 document.addEventListener('DOMContentLoaded', function() {
     // Country Flag Setup

@@ -61,9 +61,6 @@
                                             </div>
                                             <p class="mb-1 race-location">
                                                 {{ race.circuit.name }}, {{ race.circuit.country }}
-<!--                                                 {% if race.is_sprint %}
-                                                    <span class="text-primary ml-2 d-none d-md-inline">(Sprint Race)</span>
-                                                {% endif %} -->
                                             </p>
                                             <small class="race-betting-close">Betting closes: {{ race.practice_start|date:"M d, Y H:i" }}</small>
                                         </div>
@@ -75,6 +72,58 @@
                         <p>No upcoming races.</p>
                     {% endif %}
                     <a href="{% url 'all_races' %}" class="btn btn-primary mt-2">View All Races</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h2>Recent Completed Races</h2>
+                </div>
+                <div class="card-body">
+                    {% if completed_races %}
+                        <div class="list-group">
+                            {% for race in completed_races|slice:":2" %}
+                                <a href="{% url 'race_detail' race.id %}" 
+                                   class="list-group-item list-group-item-action d-flex align-items-center 
+                                          {% if race.is_sprint %}sprint-race{% endif %}">
+                                    <div class="race-list-item-wrapper d-flex align-items-center w-100">
+                                        {% if race.is_sprint %}
+                                            <div class="race-badge">Sprint Race</div>
+                                        {% endif %}
+                                        
+                                        <img src="{% static 'images/circuit-thumbnails/'|add:race.circuit.name|add:'.png' %}" 
+                                            alt="{{ race.circuit.name }} thumbnail" 
+                                            class="circuit-list-thumbnail mr-3">
+        
+                                        <div class="race-details flex-grow-1">
+                                            <div class="d-flex w-100 justify-content-between align-items-center">
+                                                <h5 class="mb-1 d-flex align-items-center">
+                                                    {{ race.name }} 
+                                                    <span id="country-flag-completed-{{ forloop.counter }}" 
+                                                        class="country-flag ml-2" 
+                                                        data-country="{{ race.circuit.country }}"></span>
+                                                </h5>
+                                                <small class="race-date">{{ race.race_date|date:"M d, Y" }}</small>
+                                            </div>
+                                            <p class="mb-1 race-location">
+                                                {{ race.circuit.name }}, {{ race.circuit.country }}
+                                            </p>
+                                            {% if race.winner %}
+                                                <small class="race-winner text-muted">
+                                                    Winner: {{ race.winner.name }}
+                                                </small>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </a>
+                            {% endfor %}
+                        </div>
+                        <a href="{% url 'all_races' %}" class="btn btn-primary mt-2">View All Races</a>
+                    {% else %}
+                        <p>No completed races yet.</p>
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -135,172 +184,11 @@
               </div>
             </div>
           </div>
-
-        <div class="col-md-6">
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h2>Recent Completed Races</h2>
-                </div>
-                <div class="card-body">
-                    {% if completed_races %}
-                        <div class="list-group">
-                            {% for race in completed_races|slice:":2" %}
-                                <a href="{% url 'race_detail' race.id %}" 
-                                   class="list-group-item list-group-item-action d-flex align-items-center 
-                                          {% if race.is_sprint %}sprint-race{% endif %}">
-                                    <div class="race-list-item-wrapper d-flex align-items-center w-100">
-                                        {% if race.is_sprint %}
-                                            <div class="race-badge">Sprint Race</div>
-                                        {% endif %}
-                                        
-                                        <img src="{% static 'images/circuit-thumbnails/'|add:race.circuit.name|add:'.png' %}" 
-                                            alt="{{ race.circuit.name }} thumbnail" 
-                                            class="circuit-list-thumbnail mr-3">
-        
-                                        <div class="race-details flex-grow-1">
-                                            <div class="d-flex w-100 justify-content-between align-items-center">
-                                                <h5 class="mb-1 d-flex align-items-center">
-                                                    {{ race.name }} 
-                                                    <span id="country-flag-completed-{{ forloop.counter }}" 
-                                                        class="country-flag ml-2" 
-                                                        data-country="{{ race.circuit.country }}"></span>
-                                                </h5>
-                                                <small class="race-date">{{ race.race_date|date:"M d, Y" }}</small>
-                                            </div>
-                                            <p class="mb-1 race-location">
-                                                {{ race.circuit.name }}, {{ race.circuit.country }}
-                                            </p>
-                                            {% if race.winner %}
-                                                <small class="race-winner text-muted">
-                                                    Winner: {{ race.winner.name }}
-                                                </small>
-                                            {% endif %}
-                                        </div>
-                                    </div>
-                                </a>
-                            {% endfor %}
-                        </div>
-                        <a href="{% url 'all_races' %}" class="btn btn-primary mt-2">View All Races</a>
-                    {% else %}
-                        <p>No completed races yet.</p>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
     </div>
-
-    {% if completed_races and classification_json %}
-    <div class="row mt-4">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header">
-                    <h2>Classification Evolution</h2>
-                </div>
-                <div class="card-body">
-                    <div class="chart-container" style="position: relative; height:40vh; width:80vw">
-                    <canvas id="classificationChart"></canvas>
-                </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    {% endif %}
 </div>
 {% endblock %}
 
 {% block extra_js %}
-{% if completed_races and classification_json %}
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const ctx = document.getElementById('classificationChart').getContext('2d');
-        
-        // Parse the JSON safely
-        const classificationData = JSON.parse('{{ classification_json|escapejs }}');
-        const raceNames = JSON.parse('{{ race_names_json|escapejs }}'); // Get race names from template
-        
-        console.log(classificationData); // Debugging line to check the data structure
-        console.log(raceNames); // Debugging line to check the race names
-
-        Object.values(classificationData).forEach(userData => {
-            console.log(userData.username, userData.cumulative_points);
-        });
-        
-        // Prepare data for classification graph
-        function prepare_classification_graph_data(classificationData, raceNames) {
-            // Generate datasets from the classification data
-            const datasets = Object.values(classificationData).map(userData => {
-                // Ensure cumulative_points exists and is an array
-                const pointsData = userData.cumulative_points || [];
-                
-                return {
-                    label: userData.username,
-                    data: pointsData,
-                    fill: false,
-                    borderColor: getRandomColor(),
-                    tension: 0.1
-                };
-            });
-            
-            return {
-                labels: raceNames, // Use the race names here for the x-axis
-                datasets: datasets
-            };
-        }
-        
-        // Call the function to prepare data for the chart
-        const graphData = prepare_classification_graph_data(classificationData, raceNames);
-
-        // Only create chart if we have data
-        if (graphData.datasets.length > 0 && graphData.labels.length > 0) {
-            new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: graphData.labels, // Use the labels (race names) for x-axis
-                    datasets: graphData.datasets // Use the datasets for player data
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        title: {
-                            display: false,
-                            text: 'User Points Evolution'
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            title: {
-                                display: false,
-                                text: 'Cumulative Points'
-                            }
-                        },
-                        x: {
-                            title: {
-                                display: false,
-                                text: 'Races'
-                            }
-                        }
-                    }
-                }
-            });
-        } else {
-            console.warn('Not enough data to create chart');
-        }
-
-        // Utility function to generate random colors
-        function getRandomColor() {
-            const letters = '0123456789ABCDEF';
-            let color = '#';
-            for (let i = 0; i < 6; i++) {
-                color += letters[Math.floor(Math.random() * 16)];
-            }
-            return color;
-        }
-    });
-</script>
-
 <script>
     const COUNTRY_CODES = {
         'Monaco': 'MC',
@@ -343,6 +231,4 @@
         });
     });
 </script>
-
-{% endif %}
 {% endblock %}

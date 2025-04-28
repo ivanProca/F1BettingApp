@@ -1,9 +1,9 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block content %}
 <div class="container">
     <h1>Season Standings - {{ season.year }}</h1>
-    
     <div class="mb-4">
         <form class="form-inline" method="get">
             <div class="form-group">
@@ -18,7 +18,6 @@
             </div>
         </form>
     </div>
-    
     <div class="card">
         <div class="card-header">
             <h2>Standings</h2>
@@ -32,6 +31,7 @@
                                 <th>Rank</th>
                                 <th>Player</th>
                                 <th>Points</th>
+                                <th>Change</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -40,6 +40,27 @@
                                     <td>{{ forloop.counter }}</td>
                                     <td>{{ standing.user__username }}</td>
                                     <td>{{ standing.total_points }}</td>
+                                    <td>
+                                        {% if standing.position_change == "NEW" %}
+                                            <span class="badge bg-info">NEW</span>
+                                        {% elif standing.position_change == "-" %}
+                                            <span class="position-no-change">―</span>
+                                        {% elif "+" in standing.position_change %}
+                                            {% with change_value=standing.position_change|slice:"1:" %}
+                                                <span class="position-up">
+                                                    <!-- &#x25b2 Up Arrow -->
+                                                    <i class="fas fa-arrow-up"></i>&#x25b2 {{ change_value }}
+                                                </span>
+                                            {% endwith %}
+                                        {% else %}
+                                            {% with change_value=standing.position_change|slice:"1:" %}
+                                                <span class="position-down">
+                                                    <!-- &#x25bc Down Arrow -->
+                                                    <i class="fas fa-arrow-down"></i>&#x25bc {{ change_value }}
+                                                </span>
+                                            {% endwith %}
+                                        {% endif %}
+                                    </td>
                                 </tr>
                             {% endfor %}
                         </tbody>
@@ -50,5 +71,123 @@
             {% endif %}
         </div>
     </div>
+
+    {% if classification_json %}
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h2>Classification Evolution</h2>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container" style="position: relative; height:40vh; width:80vw">
+                        <canvas id="classificationChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
 </div>
+{% endblock %}
+
+{% block extra_js %}
+{% if classification_json %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const ctx = document.getElementById('classificationChart').getContext('2d');
+        
+        // Parse the JSON safely
+        const classificationData = JSON.parse('{{ classification_json|escapejs }}');
+        const raceNames = JSON.parse('{{ race_names_json|escapejs }}'); // Get race names from template
+        
+        // Prepare data for classification graph
+        function prepare_classification_graph_data(classificationData, raceNames) {
+            // Generate datasets from the classification data
+            const datasets = Object.values(classificationData).map(userData => {
+                // Ensure cumulative_points exists and is an array
+                const pointsData = userData.cumulative_points || [];
+                
+                return {
+                    label: userData.username,
+                    data: pointsData,
+                    fill: false,
+                    borderColor: getRandomColor(),
+                    tension: 0.1,
+                    positions: userData.positions || [] // Include positions in the dataset
+                };
+            });
+            
+            return {
+                labels: raceNames, // Use the race names here for the x-axis
+                datasets: datasets
+            };
+        }
+        
+        // Call the function to prepare data for the chart
+        const graphData = prepare_classification_graph_data(classificationData, raceNames);
+
+        // Only create chart if we have data
+        if (graphData.datasets.length > 0 && graphData.labels.length > 0) {
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: graphData.labels, // Use the labels (race names) for x-axis
+                    datasets: graphData.datasets // Use the datasets for player data
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const datasetLabel = context.dataset.label || '';
+                                    const value = context.parsed.y;
+                                    const position = context.dataset.positions ? 
+                                        context.dataset.positions[context.dataIndex] : 
+                                        "N/A";
+                                    return `${datasetLabel}: ${value} points (P${position})`;
+                                }
+                            }
+                        },
+                        title: {
+                            display: false,
+                            text: 'User Points Evolution'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: false,
+                                text: 'Cumulative Points'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: false,
+                                text: 'Races'
+                            }
+                        }
+                    }
+                }
+            });
+        } else {
+            console.warn('Not enough data to create chart');
+        }
+
+        // Utility function to generate random colors
+        function getRandomColor() {
+            const letters = '0123456789ABCDEF';
+            let color = '#';
+            for (let i = 0; i < 6; i++) {
+                color += letters[Math.floor(Math.random() * 16)];
+            }
+            return color;
+        }
+    });
+</script>
+{% endif %}
 {% endblock %}

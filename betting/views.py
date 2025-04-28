@@ -88,19 +88,19 @@ def home(request):
         for item in leaderboard_list:
             item['position_change'] = "-"
     
-    # Prepare data for classification line graph
-    classification_data, race_names = prepare_classification_graph_data(current_season)
+    # # Prepare data for classification line graph
+    # classification_data, race_names = prepare_classification_graph_data(current_season)
     
-    # Convert classification data to JSON for template
-    classification_json = json.dumps({
-        username: {
-            'username': data['username'],
-            'cumulative_points': data['cumulative_points']
-        } for username, data in classification_data.items()
-    })
+    # # Convert classification data to JSON for template
+    # classification_json = json.dumps({
+    #     username: {
+    #         'username': data['username'],
+    #         'cumulative_points': data['cumulative_points']
+    #     } for username, data in classification_data.items()
+    # })
     
-    # Convert race names to JSON for template
-    race_names_json = json.dumps(race_names)
+    # # Convert race names to JSON for template
+    # race_names_json = json.dumps(race_names)
     
     # Get the last incomplete race for the superuser enter results button
     last_incomplete_race = Race.objects.filter(
@@ -113,8 +113,8 @@ def home(request):
         'completed_races': completed_races,
         'leaderboard': leaderboard,
         'position_changes': leaderboard_list,
-        'classification_json': classification_json,
-        'race_names_json': race_names_json,
+        # 'classification_json': classification_json,
+        # 'race_names_json': race_names_json,
         'last_incomplete_race': last_incomplete_race,
     })
 
@@ -145,7 +145,8 @@ def prepare_classification_graph_data(season):
                 classification_evolution[username] = {
                     'username': username,
                     'points_per_race': [0] * len(completed_races),
-                    'cumulative_points': [0] * len(completed_races)
+                    'cumulative_points': [0] * len(completed_races),
+                    'positions': [0] * len(completed_races)  # Add positions array
                 }
             
             # Find the race index
@@ -164,6 +165,19 @@ def prepare_classification_graph_data(season):
             cumulative_points.append(cumulative)
         
         data['cumulative_points'] = cumulative_points
+    
+    # Calculate positions at each race
+    for race_idx in range(len(completed_races)):
+        # Sort users by cumulative points at this race
+        sorted_users = sorted(
+            classification_evolution.items(),
+            key=lambda x: x[1]['cumulative_points'][race_idx],
+            reverse=True
+        )
+        
+        # Assign positions
+        for position, (username, data) in enumerate(sorted_users, 1):
+            data['positions'][race_idx] = position
     
     return classification_evolution, race_names
 
@@ -302,10 +316,76 @@ def season_standings(request, season_id=None):
     # Get list of all seasons for the dropdown
     all_seasons = Season.objects.all().order_by('-year')
     
+    # Get all completed races for this season
+    all_completed_races = Race.objects.filter(
+        season=season,
+        is_completed=True
+    ).order_by('race_date')
+    
+    # Create a list from the standings queryset to modify it
+    standings_list = list(standings)
+    
+    # Check if we have at least 2 races to compare positions
+    if all_completed_races.count() >= 2:
+        # Get the most recent race
+        last_race = all_completed_races.last()
+        
+        # Get all races except the last one
+        previous_races = all_completed_races.exclude(id=last_race.id)
+        
+        # Calculate previous standings (before the last race)
+        previous_standings = Bet.objects.filter(
+            race__season=season,
+            race__in=previous_races
+        ).values('user__username').annotate(
+            total_points=Sum('points')
+        ).order_by('-total_points')
+        
+        # Create a dictionary of previous positions
+        previous_positions = {item['user__username']: i+1 for i, item in enumerate(previous_standings)}
+        
+        # Now add position_change to each standings item
+        for i, item in enumerate(standings_list):
+            username = item['user__username']
+            current_position = i + 1
+            previous_position = previous_positions.get(username, 0)
+            
+            if previous_position == 0:
+                item['position_change'] = "NEW"
+            else:
+                position_change = previous_position - current_position
+                if position_change > 0:
+                    item['position_change'] = f"+{position_change}"
+                elif position_change < 0:
+                    item['position_change'] = str(position_change)
+                else:
+                    item['position_change'] = "-"
+    else:
+        # If we don't have enough races, set all position changes to "-"
+        for item in standings_list:
+            item['position_change'] = "-"
+    
+    # Prepare data for classification line graph
+    classification_data, race_names = prepare_classification_graph_data(season)
+    
+    # Convert classification data to JSON for template
+    classification_json = json.dumps({
+        username: {
+            'username': data['username'],
+            'cumulative_points': data['cumulative_points'],
+            'positions': data['positions']  # Include positions data
+        } for username, data in classification_data.items()
+    })
+    
+    # Convert race names to JSON for template
+    race_names_json = json.dumps(race_names)
+    
     return render(request, 'betting/standings.html', {
         'season': season,
-        'standings': standings,
+        'standings': standings_list,
         'all_seasons': all_seasons,
+        'classification_json': classification_json,
+        'race_names_json': race_names_json,
     })
 
 # Admin view to enter race results

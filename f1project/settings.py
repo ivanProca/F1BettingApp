@@ -15,6 +15,10 @@ import dj_database_url
 
 from pathlib import Path
 
+from dotenv import load_dotenv
+# Load environment variables from .env file
+load_dotenv()
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -143,6 +147,25 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 LOGIN_REDIRECT_URL = 'login'
 LOGOUT_REDIRECT_URL = 'home'
 LOGIN_URL = '/login/'  # Redirect to your custom login page
+
+# Email settings using environment variables
+#EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend' # for testing
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
+EMAIL_PORT = int(os.environ.get('EMAIL_PORT', 587))
+EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS', 'True') == 'True'
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
+DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'F1 Pit Stop Picks <noreply@example.com>')
+
+# # Email settings for password reset functionality DEVELOPMENT
+# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# EMAIL_HOST = 'smtp.example.com'  # Change to your SMTP server
+# EMAIL_PORT = 587
+# EMAIL_USE_TLS = True
+# EMAIL_HOST_USER = 'your_email@example.com'  # Change to your email
+# EMAIL_HOST_PASSWORD = 'your_password'  # Change to your email password
+# DEFAULT_FROM_EMAIL = 'F1 Pit Stop Picks <noreply@f1pitstoppicks.com>'
 
 # F1 Betting Points Configuration
 F1_BETTING = {

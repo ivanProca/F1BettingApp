@@ -128,63 +128,65 @@
             </div>
         </div>
         
-        <div class="col-md-6">
-            <div class="card">
-              <div class="card-header">
-                <h2>Current Leaderboard</h2>
-              </div>
-              <div class="card-body">
-                {% if leaderboard %}
-                  <div class="table-responsive">
-                    <table class="table table-striped">
-                      <thead>
-                        <tr>
-                          <th>Rank</th>
-                          <th>Player</th>
-                          <th>Points</th>
-                          <th>Change</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {% for standing in leaderboard %}
-                          <tr>
-                            <td>{{ forloop.counter }}</td>
-                            <td>{{ standing.user__username }}</td>
-                            <td>{{ standing.total_points }}</td>
-                            <td>
-                              {% if standing.position_change == "NEW" %}
-                                <span class="badge bg-info">NEW</span>
-                              {% elif standing.position_change == "-" %}
-                                <span class="position-no-change">―</span>
-                              {% elif "+" in standing.position_change %}
-                                {% with change_value=standing.position_change|slice:"1:" %}
-                                  <span class="position-up">
-                                    <!-- &#x25b2 Up Arrow -->
-                                    <i class="fas fa-arrow-up"></i>&#x25b2 {{ change_value }}
-                                  </span>
-                                {% endwith %}
-                              {% else %}
-                                {% with change_value=standing.position_change|slice:"1:" %}
-                                  <span class="position-down">
-                                    <!-- &#x25bc Down Arrow -->
-                                    <i class="fas fa-arrow-down"></i>&#x25bc {{ change_value }}
-                                  </span>
-                                {% endwith %}
-                              {% endif %}
-                            </td>
-                          </tr>
-                        {% endfor %}
-                      </tbody>
-                    </table>
-                  </div>
-                  <a href="{% url 'current_standings' %}" class="btn btn-primary mt-2">View Full Standings</a>
-                {% else %}
-                  <p>No points recorded yet.</p>
-                {% endif %}
-              </div>
+        {% if user.is_authenticated %}
+            <div class="col-md-6">
+                <div class="card">
+                <div class="card-header">
+                    <h2>Current Leaderboard</h2>
+                </div>
+                <div class="card-body">
+                    {% if leaderboard %}
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                        <thead>
+                            <tr>
+                            <th>Rank</th>
+                            <th>Player</th>
+                            <th>Points</th>
+                            <th>Change</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for standing in leaderboard %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td>{{ standing.user__username }}</td>
+                                <td>{{ standing.total_points }}</td>
+                                <td>
+                                {% if standing.position_change == "NEW" %}
+                                    <span class="badge bg-info">NEW</span>
+                                {% elif standing.position_change == "-" %}
+                                    <span class="position-no-change">―</span>
+                                {% elif "+" in standing.position_change %}
+                                    {% with change_value=standing.position_change|slice:"1:" %}
+                                    <span class="position-up">
+                                        <!-- &#x25b2 Up Arrow -->
+                                        <i class="fas fa-arrow-up"></i>&#x25b2 {{ change_value }}
+                                    </span>
+                                    {% endwith %}
+                                {% else %}
+                                    {% with change_value=standing.position_change|slice:"1:" %}
+                                    <span class="position-down">
+                                        <!-- &#x25bc Down Arrow -->
+                                        <i class="fas fa-arrow-down"></i>&#x25bc {{ change_value }}
+                                    </span>
+                                    {% endwith %}
+                                {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                        </table>
+                    </div>
+                    <a href="{% url 'current_standings' %}" class="btn btn-primary mt-2">View Full Standings</a>
+                    {% else %}
+                    <p>No points recorded yet.</p>
+                    {% endif %}
+                </div>
+                </div>
             </div>
-          </div>
-    </div>
+        </div>
+    {% endif %}
 </div>
 {% endblock %}
 

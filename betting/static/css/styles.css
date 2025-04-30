@@ -633,3 +633,113 @@
 .badge.bg-info {
   font-weight: 500;
 }
+
+/* User profile dropdown menu styling */
+.dropdown-menu {
+  border: none;
+  border-radius: 6px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+  padding: 0.5rem 0;
+  margin-top: 0.5rem;
+  border-top: 3px solid var(--f1-red);
+  min-width: 12rem;
+  animation: dropdown-fade 0.2s ease-out;
+}
+
+@keyframes dropdown-fade {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.dropdown-item {
+  padding: 0.75rem 1.25rem;
+  font-weight: 500;
+  color: var(--f1-dark);
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.dropdown-item:hover, .dropdown-item:focus {
+  background-color: rgba(225, 6, 0, 0.05);
+  color: var(--f1-red);
+  padding-left: 1.5rem;
+}
+
+.dropdown-item:active {
+  background-color: var(--f1-red);
+  color: white;
+}
+
+.dropdown-item:hover::before {
+  content: "";
+  position: absolute;
+  left: 0.5rem;
+  top: 50%;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background-color: var(--f1-red);
+  transform: translateY(-50%);
+}
+
+.dropdown-divider {
+  margin: 0.25rem 0;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+/* User dropdown toggle styling */
+.navbar-nav .dropdown-toggle {
+  display: flex;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.navbar-nav .dropdown-toggle::after {
+  margin-left: 0.5rem;
+  transition: transform 0.2s ease;
+}
+
+.navbar-nav .dropdown-toggle[aria-expanded="true"]::after {
+  transform: rotate(180deg);
+}
+
+/* Add a subtle highlight to the dropdown toggle when active */
+.navbar-nav .dropdown-toggle[aria-expanded="true"] {
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+/* Hover effect for the user dropdown toggle */
+.navbar-nav .dropdown-toggle:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Mobile responsive adjustments */
+@media (max-width: 992px) {
+  .dropdown-menu {
+    border-top: none;
+    box-shadow: none;
+    background-color: rgba(255, 255, 255, 0.05);
+    padding-left: 1rem;
+  }
+  
+  .dropdown-item {
+    color: rgba(255, 255, 255, 0.85);
+  }
+  
+  .dropdown-item:hover, .dropdown-item:focus {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: white;
+  }
+  
+  .dropdown-divider {
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+  }
+}

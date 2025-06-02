@@ -143,6 +143,7 @@
                             <th>Rank</th>
                             <th>Player</th>
                             <th>Points</th>
+                            <th>Last Race Points</th>
                             <th>Change</th>
                             </tr>
                         </thead>
@@ -152,6 +153,7 @@
                                 <td>{{ forloop.counter }}</td>
                                 <td>{{ standing.user__username }}</td>
                                 <td>{{ standing.total_points }}</td>
+                                <td>{{ standing.last_race_points }}</td>
                                 <td>
                                 {% if standing.position_change == "NEW" %}
                                     <span class="badge bg-info">NEW</span>

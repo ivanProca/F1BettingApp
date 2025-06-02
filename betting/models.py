@@ -100,15 +100,6 @@ class RaceResult(models.Model):
         podium_wrong_position_points = point_values['PODIUM_WRONG_POSITION']
         dnf_points = point_values['DNF_CORRECT']
 
-        if self.race.is_sprint:
-            podium_correct_position_points = 1.5
-            podium_wrong_position_points = 0.5
-            dnf_points = 1
-        else:
-            podium_correct_position_points = 3
-            podium_wrong_position_points = 1
-            dnf_points = 2
-
         for bet in bets:
             points = 0
 
@@ -151,7 +142,7 @@ class RaceResult(models.Model):
                 points += podium_wrong_position_points  # 1 for being on podium but wrong position
             
             # Check DNF prediction
-            if bet.dnf_prediction == self.dnf_count:
+            if int(bet.dnf_prediction) == int(self.dnf_count):
                 points += dnf_points
                 
             # Update bet points (add eventual extra points)

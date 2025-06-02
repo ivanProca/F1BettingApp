@@ -2,8 +2,6 @@
 
 import json
 
-from django.conf import settings
-
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
@@ -11,15 +9,7 @@ from django.db.models import Sum
 from django.contrib import messages
 
 from .models import Race, Bet, Season, RaceResult, Driver
-from .forms import BetForm, UserRegistrationForm
-
-from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
-from django.contrib.auth.models import User
-from django.contrib.auth.forms import PasswordChangeForm
-
-# In one of your app's views.py files
-from django.core.mail import send_mail
-from django.http import HttpResponse
+from .forms import BetForm
 
 def home(request):
     # Show upcoming races and leaderboard
@@ -53,12 +43,28 @@ def home(request):
     # Create a dictionary to track position changes
     leaderboard_list = list(leaderboard)
     
+    # Get last race points for each user
+    last_race_points = {}
+    last_race = None
+    if all_completed_races.exists():
+        last_race = all_completed_races.last()
+        last_race_bets = Bet.objects.filter(
+            race=last_race
+        ).values('user__username', 'points')
+        
+        for bet in last_race_bets:
+            username = bet['user__username']
+            points = bet['points'] or 0
+            last_race_points[username] = points
+    
+    # Add last race points to leaderboard
+    for standing in leaderboard_list:
+        username = standing['user__username']
+        standing['last_race_points'] = last_race_points.get(username, 0)
+
     # Check if we have at least 2 races to compare positions
     if all_completed_races.count() >= 2:
-        # Get the most recent race
-        last_race = all_completed_races.last()
-        
-        # Get all races except the last one
+        # Get all races except the last one (reuse last_race variable)
         previous_races = all_completed_races.exclude(id=last_race.id)
         
         # Calculate previous standings (before the last race)
@@ -116,8 +122,7 @@ def home(request):
     return render(request, 'betting/home.html', {
         'upcoming_races': upcoming_races,
         'completed_races': completed_races,
-        'leaderboard': leaderboard,
-        'position_changes': leaderboard_list,
+        'leaderboard': leaderboard_list,  # Use the enhanced list instead of original queryset
         # 'classification_json': classification_json,
         # 'race_names_json': race_names_json,
         'last_incomplete_race': last_incomplete_race,
@@ -330,11 +335,27 @@ def season_standings(request, season_id=None):
     # Create a list from the standings queryset to modify it
     standings_list = list(standings)
     
+    # Get last race points for each user
+    last_race_points = {}
+    last_race = None
+    if all_completed_races.exists():
+        last_race = all_completed_races.last()
+        last_race_bets = Bet.objects.filter(
+            race=last_race
+        ).values('user__username', 'points')
+        
+        for bet in last_race_bets:
+            username = bet['user__username']
+            points = bet['points'] or 0
+            last_race_points[username] = points
+    
+    # Add last race points to standings
+    for standing in standings_list:
+        username = standing['user__username']
+        standing['last_race_points'] = last_race_points.get(username, 0)
+
     # Check if we have at least 2 races to compare positions
     if all_completed_races.count() >= 2:
-        # Get the most recent race
-        last_race = all_completed_races.last()
-        
         # Get all races except the last one
         previous_races = all_completed_races.exclude(id=last_race.id)
         
@@ -438,56 +459,6 @@ def enter_race_result(request, race_id):
         'drivers': active_drivers,
     })
 
-def register_view(request):
-    if request.method == 'POST':
-        username = request.POST.get('username')
-        email = request.POST.get('email')
-        password1 = request.POST.get('password1')
-        password2 = request.POST.get('password2')
-        
-        # Form validation
-        if User.objects.filter(username=username).exists():
-            messages.error(request, 'Username already exists.')
-            return redirect('betting/register')
-        
-        if User.objects.filter(email=email).exists():
-            messages.error(request, 'Email already exists.')
-            return redirect('betting/register')
-        
-        if password1 != password2:
-            messages.error(request, 'Passwords do not match.')
-            return redirect('betting/register')
-        
-        if len(password1) < 8:
-            messages.error(request, 'Password must be at least 8 characters long.')
-            return redirect('betting/register')
-        
-        # Create user
-        user = User.objects.create_user(
-            username=username,
-            email=email,
-            password=password1
-        )
-        
-        messages.success(request, 'Account created successfully! You can now log in.')
-        return redirect('home') # Redirect to home page
-    
-    return render(request, 'betting/register.html')
-
-def login_view(request):
-    if request.method == 'POST':
-        username = request.POST.get('username')
-        password = request.POST.get('password')
-        user = authenticate(request, username=username, password=password)
-        
-        if user is not None:
-            login(request, user)
-            return redirect('home')  # Change 'home' to your home page URL name
-        else:
-            messages.error(request, 'Invalid username or password.')
-    
-    return render(request, 'betting/login.html')
-
 def rules_page(request):
     return render(request, 'betting/rules.html')
 
@@ -499,99 +470,3 @@ def all_races_view(request):
         'all_races': all_races
     }
     return render(request, 'betting/all_races.html', context)
-
-@login_required
-def profile_view(request):
-    """Display the user profile page"""
-    return render(request, 'betting/profile.html')
-
-@login_required
-def update_profile(request):
-    """Update the user's username"""
-    if request.method == 'POST':
-        username = request.POST.get('username')
-        
-        # Check if username already exists and it's not the current user
-        if User.objects.filter(username=username).exclude(id=request.user.id).exists():
-            messages.error(request, 'Username already exists. Please choose another one.')
-            return redirect('profile')
-        
-        # Update username
-        user = request.user
-        user.username = username
-        user.save()
-        
-        messages.success(request, 'Your profile has been updated successfully!')
-        return redirect('profile')
-    
-    return redirect('profile')
-
-@login_required
-def update_email(request):
-    """Update the user's email address"""
-    if request.method == 'POST':
-        email = request.POST.get('email')
-        
-        # Check if email already exists and it's not the current user
-        if email and User.objects.filter(email=email).exclude(id=request.user.id).exists():
-            messages.error(request, 'Email already exists. Please use another one.')
-            return redirect('profile')
-        
-        # Update email
-        user = request.user
-        user.email = email
-        user.save()
-        
-        messages.success(request, 'Your email has been updated successfully!')
-        return redirect('profile')
-    
-    return redirect('profile')
-
-@login_required
-def change_password(request):
-    """Change the user's password"""
-    if request.method == 'POST':
-        current_password = request.POST.get('current_password')
-        new_password1 = request.POST.get('new_password1')
-        new_password2 = request.POST.get('new_password2')
-        
-        # Check if the current password is correct
-        if not request.user.check_password(current_password):
-            messages.error(request, 'Your current password is incorrect.')
-            return redirect('profile')
-        
-        # Check if the new passwords match
-        if new_password1 != new_password2:
-            messages.error(request, 'The new passwords do not match.')
-            return redirect('profile')
-        
-        # Check if the new password meets requirements
-        if len(new_password1) < 8:
-            messages.error(request, 'Your new password must be at least 8 characters long.')
-            return redirect('profile')
-        
-        # Update password
-        request.user.set_password(new_password1)
-        request.user.save()
-        
-        # Update session to prevent logout
-        update_session_auth_hash(request, request.user)
-        
-        messages.success(request, 'Your password has been changed successfully!')
-        return redirect('profile')
-    
-    return redirect('profile')
-
-def test_email(request):
-    success = send_mail(
-        'Test Email from Django App',
-        'This is a test email from your F1 Pit Stop Picks application.',
-        'noreply.F1Game@gmail.com',
-        ['procalcio@hotmail.fr'],  # Replace with your email
-        fail_silently=False,
-    )
-    
-    if success:
-        return HttpResponse("Email sent successfully!")
-    else:
-        return HttpResponse("Failed to send email")

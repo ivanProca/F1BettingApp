@@ -145,9 +145,9 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Add these lines at the end of the file
-LOGIN_REDIRECT_URL = 'login'
+LOGIN_REDIRECT_URL = '/app_accounts/login'
 LOGOUT_REDIRECT_URL = 'home'
-LOGIN_URL = '/login/'  # Redirect to your custom login page
+LOGIN_URL = '/app_accounts/login/'  # Redirect to your custom login page
 
 # Email settings using environment variables
 #EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend' # for testing
